@@ -155,3 +155,12 @@ CREATE TABLE Representations (
   FOREIGN KEY (Law_Firm_Name) references Law_Firms(Firm_Name)
   
 );
+
+CREATE TABLE Scopes (
+  Group_ID char(5) NOT NULL,
+  HS_code char(10) NOT NULL,
+  PRIMARY KEY (Group_ID, HS_code),
+  FOREIGN KEY (Group_ID) references Case_Groups(Group_ID),
+  FOREIGN KEY (HS_code) references Commodities(HS_code)
+  
+);
