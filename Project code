@@ -135,3 +135,23 @@ CREATE TABLE Publications (
 );
 
 
+CREATE TABLE Staff_Assigned (
+   Group_ID char(5) NOT NULL,
+   Staff_ID char(10) NOT NULL,
+   PRIMARY KEY (Group_ID, Staff_ID),
+   FOREIGN KEY (Group_ID) references Case_Groups(Group_ID),
+   FOREIGN KEY (Staff_ID) references ITC_Staff(ID)
+   
+);
+
+
+CREATE TABLE Representations (
+  Group_ID char(5) NOT NULL,
+  Petitioner_Name varchar(150) NOT NULL,
+  Law_Firm_Name varchar(150) NOT NULL,
+  PRIMARY KEY (Group_ID, Petitioner_Name, Law_Firm_Name),
+  FOREIGN KEY (Group_ID) references Case_Groups(Group_ID),
+  FOREIGN KEY (Petitioner_Name) references Petitioners(Firm_Name)
+  FOREIGN KEY (Law_Firm_Name) references Law_Firms(Firm_Name)
+  
+);
