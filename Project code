@@ -62,7 +62,7 @@ CREATE TABLE Case_Groups (
 
 CREATE TABLE Commissioners   (
     ID char(10) NOT NULL,
-    Commissioner_Name varchar(150),
+    Commissioner_Name varchar(150) NOT NULL,
     Term_begin_date DATE,
     Term_end_date DATE,
 	PRIMARY KEY (ID)
@@ -90,8 +90,6 @@ CREATE TABLE Investigations  (
     Product_ID char(3) NOT NULL,
     Group_ID char(5) NOT NULL,
 	PRIMARY KEY (Investigation_Number),
-	FOREIGN KEY (Investigation_Number) REFERENCES Case_Groups(Investigation_Number),
-	FOREIGN KEY (Investigation_Number) REFERENCES Determinations(Investigation_Number),
 	);
 
 CREATE TABLE Petitioners  (
@@ -103,12 +101,12 @@ CREATE TABLE Petitioners  (
 
 CREATE TABLE Determinations (
     Investigation_Number char(10) NOT NULL,
-    Type varchar(100),
+    Phase varchar(100),
     Hearing_Date DATE,
     Determination varchar(15),
-	PRIMARY KEY (Investigation_Number, Type),
+	PRIMARY KEY (Investigation_Number, Phase),
 	FOREIGN KEY (Hearing_Date) REFERENCES Date_Dim(Date),
-    	CHECK (Type IN ('Prelim', 'Final', 'Review'),
+    	CHECK (Phase IN ('Prelim', 'Final', 'Review'),
 	CHECK (Determination IN ('Affirmative', 'Negative', 'Terminated')
 );
 
@@ -117,9 +115,8 @@ CREATE TABLE Investigations_Title  (
     Investigation_Type varchar(100),
     Investigation_Title char(10) NOT NULL,
 	PRIMARY KEY (Investigation_Number),
-	FOREIGN KEY (Investigation_Number) REFERENCES Case_Groups(Investigation_Number),
-	FOREIGN KEY (Investigation_Number) REFERENCES Determinations(Investigation_Number),
-	FOREIGN KEY (Investigation_Number) REFERENCES Publications(Investigation_Number)
+	FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number),
+	FOREIGN KEY (Investigation_Number) REFERENCES Determinations(Investigation_Number)
     
 );
 
@@ -128,7 +125,8 @@ CREATE TABLE Publications (
     Investigation_Number char(10) NOT NULL,
     Phase varchar(50),
 	PRIMARY KEY (Pub_No),
-    	FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number)
+    FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number),
+    CHECK (Phase IN ('Prelim', 'Final', 'Review'),
 
 );
 
