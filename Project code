@@ -60,7 +60,8 @@ CREATE TABLE Case_Groups (
     Product_ID char(3) NOT NULL,
 	PRIMARY KEY (Group_ID),
     FOREIGN KEY (Product_ID) references Products(Product_ID)
-);
+ON DELETE CASCADE
+ON UPDATE CASCADE);
 
 
 CREATE TABLE Commissioners   (
@@ -69,8 +70,12 @@ CREATE TABLE Commissioners   (
     Term_begin_date DATE,
     Term_end_date DATE,
 	PRIMARY KEY (ID),
-    	FOREIGN KEY (Term_begin_date) references Date_Dim,
+    	FOREIGN KEY (Term_begin_date) references Date_Dim
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
     	FOREIGN KEY (Term_end_date) references Date_Dim
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
 );
 
 
@@ -100,7 +105,8 @@ CREATE TABLE Petitioners  (
     Group_ID char(5) NOT NULL,
 	PRIMARY KEY (Firm_Name, Group_ID),
     	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID)
-);
+	ON DELETE CASCADE
+	ON UPDATE CASCADE);
 
 CREATE TABLE Determinations (
     Investigation_Number char(10) NOT NULL,
@@ -108,7 +114,9 @@ CREATE TABLE Determinations (
     Hearing_Date DATE NOT NULL,
     Determination varchar(15) NOT NULL,
 	PRIMARY KEY (Investigation_Number, Phase),
-	FOREIGN KEY (Hearing_Date) REFERENCES Date_Dim(Date),
+	FOREIGN KEY (Hearing_Date) REFERENCES Date_Dim(Date)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
     	CHECK (Phase IN ('Prelim', 'Final', 'Review')),
 	CHECK (Determination IN ('Affirmative', 'Negative', 'Terminated'))
 );
@@ -119,6 +127,8 @@ CREATE TABLE Investigations_Title  (
     Investigation_Title char(10) NOT NULL,
 	PRIMARY KEY (Investigation_Number),
 	FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
     
 );
 
@@ -127,7 +137,9 @@ CREATE TABLE Publications (
     Investigation_Number varchar(11) NOT NULL,
     Phase varchar(50),
 	PRIMARY KEY (Pub_No),
-    FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number),
+    FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number)
+    ON DELETE CASCADE
+	ON UPDATE CASCADE,
     CHECK (Phase IN ('Prelim', 'Final', 'Review'))
 
 );
@@ -137,8 +149,12 @@ CREATE TABLE Staff_Assigned (
    Group_ID char(5) NOT NULL,
    Staff_ID char(10) NOT NULL,
    	PRIMARY KEY (Group_ID, Staff_ID),
-   	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID),
+   	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
    	FOREIGN KEY (Staff_ID) references ITC_Staff(ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
    
 );
 
@@ -149,9 +165,15 @@ CREATE TABLE Representations (
   Law_Firm_Name varchar(150) NOT NULL,
   Law_Lead varchar(150) NOT NULL,
   PRIMARY KEY (Group_ID, Petitioner_Name, Law_Firm_Name),
-  FOREIGN KEY (Group_ID) references Case_Groups(Group_ID),
-  FOREIGN KEY (Petitioner_Name, Group_ID) references Petitioners,
+  FOREIGN KEY (Group_ID) references Case_Groups(Group_ID)
+  ON DELETE CASCADE
+ON UPDATE CASCADE,
+  FOREIGN KEY (Petitioner_Name, Group_ID) references Petitioners
+  ON DELETE CASCADE
+ON UPDATE CASCADE,
   FOREIGN KEY (Law_Firm_Name, Law_Lead) references Law_Firms(Firm_Name,Lead)
+  ON DELETE CASCADE
+ON UPDATE CASCADE
   
 );
 
@@ -159,7 +181,11 @@ CREATE TABLE Scopes (
   Group_ID char(5) NOT NULL,
   HS_code char(10) NOT NULL,
   PRIMARY KEY (Group_ID, HS_code),
-  FOREIGN KEY (Group_ID) references Case_Groups(Group_ID),
+  FOREIGN KEY (Group_ID) references Case_Groups(Group_ID)
+  ON DELETE CASCADE
+ON UPDATE CASCADE,
   FOREIGN KEY (HS_code) references Commodities(HS_code)
+  ON DELETE CASCADE
+ON UPDATE CASCADE
   
 );
