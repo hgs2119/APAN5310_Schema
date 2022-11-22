@@ -29,19 +29,19 @@ CREATE TABLE Products (
 );
 
 CREATE TABLE Date_Dim (
-   [Date] DATE NOT NULL,
-   [Day] TINYINT NOT NULL,
-   [DaySuffix] CHAR(2) NOT NULL,
-   [WeekDayName] VARCHAR(10) NOT NULL,
-   [WeekDayName_Short] CHAR(3) NOT NULL,
-   [Month] TINYINT NOT NULL,
-   [MonthName] VARCHAR(10) NOT NULL,
-   [MonthName_Short] CHAR(3) NOT NULL,
-   [Quarter] TINYINT NOT NULL,
-   [QuarterName] VARCHAR(6) NOT NULL,
-   [Year] INT NOT NULL,
-   [MMYYYY] CHAR(6) NOT NULL,
-   [MonthYear] CHAR(7) NOT NULL,
+   Date DATE NOT NULL,
+   Day TINYINT NOT NULL,
+   DaySuffix CHAR(2) NOT NULL,
+   WeekDayName VARCHAR(10) NOT NULL,
+   WeekDayName_Short CHAR(3) NOT NULL,
+   Month TINYINT NOT NULL,
+   MonthName VARCHAR(10) NOT NULL,
+   MonthName_Short CHAR(3) NOT NULL,
+   Quarter TINYINT NOT NULL,
+   QuarterName VARCHAR(6) NOT NULL,
+   Year INT NOT NULL,
+   MMYYYY CHAR(6) NOT NULL,
+   MonthYear CHAR(7) NOT NULL,
    PRIMARY KEY (Date)
 );
 
