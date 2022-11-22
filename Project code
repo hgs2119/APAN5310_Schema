@@ -1,16 +1,19 @@
-DROP TABLE IF EXISTS Investigations;
- DROP TABLE IF EXISTS Publications;
- DROP TABLE IF EXISTS Determinations;
- DROP TABLE IF EXISTS Country;
- DROP TABLE IF EXISTS Products;
- DROP TABLE IF EXISTS Date_Dim;
- DROP TABLE IF EXISTS Commodities;
- DROP TABLE IF EXISTS Case_Groups;
- DROP TABLE IF EXISTS Investigations_Title;
- DROP TABLE IF EXISTS Commissioners;
- DROP TABLE IF EXISTS Staff_Assigned;
- DROP TABLE IF EXISTS Law_Firms;
- DROP TABLE IF EXISTS Petitioning_Firms;
+DROP TABLE IF EXISTS Investigations CASCADE;
+ DROP TABLE IF EXISTS Publications CASCADE;
+ DROP TABLE IF EXISTS Determinations CASCADE;
+ DROP TABLE IF EXISTS Country CASCADE;
+ DROP TABLE IF EXISTS Products CASCADE;
+ DROP TABLE IF EXISTS Date_Dim CASCADE;
+ DROP TABLE IF EXISTS Commodities CASCADE;
+ DROP TABLE IF EXISTS Case_Groups CASCADE;
+ DROP TABLE IF EXISTS Investigations_Title CASCADE;
+ DROP TABLE IF EXISTS Commissioners CASCADE;
+ DROP TABLE IF EXISTS Staff_Assigned CASCADE;
+ DROP TABLE IF EXISTS Law_Firms CASCADE;
+ DROP TABLE IF EXISTS Petitioners CASCADE;
+ DROP TABLE IF EXISTS ITC_Staff CASCADE;
+ DROP TABLE IF EXISTS Representations CASCADE;
+ DROP TABLE IF EXISTS Scopes CASCADE;
 
 
 CREATE TABLE Country (
@@ -23,21 +26,21 @@ CREATE TABLE Country (
 
 CREATE TABLE Products (
     Product_ID char(3) NOT NULL,
-    Product_Name varchar(100),
+    Product_Name varchar(100) UNIQUE,
     Product_Type varchar(100),
 	PRIMARY KEY (Product_ID)
 );
 
 CREATE TABLE Date_Dim (
    Date DATE NOT NULL,
-   Day TINYINT NOT NULL,
+   Day SMALLINT NOT NULL,
    DaySuffix CHAR(2) NOT NULL,
    WeekDayName VARCHAR(10) NOT NULL,
    WeekDayName_Short CHAR(3) NOT NULL,
-   Month TINYINT NOT NULL,
+   Month SMALLINT NOT NULL,
    MonthName VARCHAR(10) NOT NULL,
    MonthName_Short CHAR(3) NOT NULL,
-   Quarter TINYINT NOT NULL,
+   Quarter SMALLINT NOT NULL,
    QuarterName VARCHAR(6) NOT NULL,
    Year INT NOT NULL,
    MMYYYY CHAR(6) NOT NULL,
@@ -65,7 +68,7 @@ CREATE TABLE Commissioners   (
     Commissioner_Name varchar(150) NOT NULL,
     Term_begin_date DATE,
     Term_end_date DATE,
-	PRIMARY KEY (ID)
+	PRIMARY KEY (ID),
     	FOREIGN KEY (Term_begin_date) references Date_Dim,
     	FOREIGN KEY (Term_end_date) references Date_Dim
 );
@@ -85,29 +88,29 @@ CREATE TABLE Law_Firms   (
 );
 
 CREATE TABLE Investigations  (
-    Investigation_Number char(10) NOT NULL,
+    Investigation_Number varchar(11) NOT NULL,
     Country_Code char(5) NOT NULL,
     Product_ID char(3) NOT NULL,
     Group_ID char(5) NOT NULL,
-	PRIMARY KEY (Investigation_Number),
+	PRIMARY KEY (Investigation_Number)
 	);
 
 CREATE TABLE Petitioners  (
     Firm_Name varchar(150) NOT NULL,
-    Group_ID,
+    Group_ID char(5) NOT NULL,
 	PRIMARY KEY (Firm_Name, Group_ID),
     	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID)
 );
 
 CREATE TABLE Determinations (
     Investigation_Number char(10) NOT NULL,
-    Phase varchar(100),
-    Hearing_Date DATE,
-    Determination varchar(15),
+    Phase varchar(100) NOT NULL,
+    Hearing_Date DATE NOT NULL,
+    Determination varchar(15) NOT NULL,
 	PRIMARY KEY (Investigation_Number, Phase),
 	FOREIGN KEY (Hearing_Date) REFERENCES Date_Dim(Date),
-    	CHECK (Phase IN ('Prelim', 'Final', 'Review'),
-	CHECK (Determination IN ('Affirmative', 'Negative', 'Terminated')
+    	CHECK (Phase IN ('Prelim', 'Final', 'Review')),
+	CHECK (Determination IN ('Affirmative', 'Negative', 'Terminated'))
 );
 
 CREATE TABLE Investigations_Title  (
@@ -115,18 +118,17 @@ CREATE TABLE Investigations_Title  (
     Investigation_Type varchar(100),
     Investigation_Title char(10) NOT NULL,
 	PRIMARY KEY (Investigation_Number),
-	FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number),
-	FOREIGN KEY (Investigation_Number) REFERENCES Determinations(Investigation_Number)
+	FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number)
     
 );
 
 CREATE TABLE Publications (
     Pub_No char(4),
-    Investigation_Number char(10) NOT NULL,
+    Investigation_Number varchar(11) NOT NULL,
     Phase varchar(50),
 	PRIMARY KEY (Pub_No),
     FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number),
-    CHECK (Phase IN ('Prelim', 'Final', 'Review'),
+    CHECK (Phase IN ('Prelim', 'Final', 'Review'))
 
 );
 
@@ -145,10 +147,11 @@ CREATE TABLE Representations (
   Group_ID char(5) NOT NULL,
   Petitioner_Name varchar(150) NOT NULL,
   Law_Firm_Name varchar(150) NOT NULL,
+  Law_Lead varchar(150) NOT NULL,
   PRIMARY KEY (Group_ID, Petitioner_Name, Law_Firm_Name),
   FOREIGN KEY (Group_ID) references Case_Groups(Group_ID),
-  FOREIGN KEY (Petitioner_Name) references Petitioners(Firm_Name)
-  FOREIGN KEY (Law_Firm_Name) references Law_Firms(Firm_Name)
+  FOREIGN KEY (Petitioner_Name, Group_ID) references Petitioners,
+  FOREIGN KEY (Law_Firm_Name, Law_Lead) references Law_Firms(Firm_Name,Lead)
   
 );
 
