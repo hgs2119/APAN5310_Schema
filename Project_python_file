@@ -6,7 +6,7 @@ import os
 
 #Load files
 main_df = pd.read_csv(".csv") 
-p_df = pd.read_csv("products.csv") 
+prod_df = pd.read_csv("products.csv") 
 c_df = pd.read_csv("country.csv") 
 comm_df = pd.read_csv("commissioners.csv") 
 ITC_df = pd.read_csv("ITC_Staff.csv") 
@@ -79,7 +79,7 @@ query = "CREATE TABLE Products (
 cur.execute(query)
 
 #Make dataframe for Products
-df_Products = p_df[['Products']].copy()
+df_Products = prod_df[['Products']].copy()
 df_Products.drop_duplicates(inplace=True)
 df_Products = df_Products.reset_index(drop=True)
 df_Products.reset_index(inplace=True)
