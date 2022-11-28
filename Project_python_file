@@ -12,8 +12,6 @@ comm_df = pd.read_csv("commissioners.csv")
 ITC_df = pd.read_csv("ITC_Staff.csv") 
 law_df = pd.read_csv("law_firms.csv") 
 
-comm_df = pd.read_csv("Commissioners_table.csv") 
-
 
 #Connect to database
 conn = psycopg2.connect(
