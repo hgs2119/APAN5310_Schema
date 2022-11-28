@@ -5,7 +5,7 @@ import psycopg2
 import os
 
 #Load files
-main_df = pd.read_csv("dataset.csv") #Please insert filename
+main_df = pd.read_csv("dataset.csv")
 prod_df = pd.read_csv("products.csv") 
 c_df = pd.read_csv("country.csv") 
 comm_df = pd.read_csv("commissioners.csv") 
@@ -17,7 +17,7 @@ law_df = pd.read_csv("law_firms.csv")
 conn = psycopg2.connect(
     host="localhost", 
     database="postgres", #please change database 
-    user="postgres", #please change user name
+    user="postgres", #please change username
     password="123") #please change password
 
 #Create a cursor
