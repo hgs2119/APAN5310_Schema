@@ -5,7 +5,6 @@ import psycopg2
 import os
 
 #load file 
-os.chdir('C:\\Users\\bucsp\\Desktop\\Hw') #please set directory
 df = pd.read_csv("APAN5310 - HW5 Data.csv")
 
 #connect to database
