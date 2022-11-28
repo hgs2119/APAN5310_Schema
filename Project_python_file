@@ -5,9 +5,10 @@ import psycopg2
 import os
 
 #Load files
-df_main = pd.read_csv(".csv") #insert document here
-df_product = pd.read_csv("product_table.csv") 
-df_country = pd.read_csv("product_table.csv") 
+main_df = pd.read_csv(".csv") 
+p_df = pd.read_csv("product_table.csv") 
+c_df = pd.read_csv("country_table.csv") 
+comm_df = pd.read_csv("Commissioners_table.csv") 
 
 
 #connect to database
@@ -22,19 +23,23 @@ conn.autocommit = True
 cur = conn.cursor()
 
 #if table exist, drop table
-query =  "DROP TABLE IF EXISTS Investigations;"
-query += "DROP TABLE IF EXISTS Publications;"
-query += "DROP TABLE IF EXISTS Determinations;"
-query += "DROP TABLE IF EXISTS Country;"
-query += "DROP TABLE IF EXISTS Products;"
-query += "DROP TABLE IF EXISTS Date_Dim;"
-query += "DROP TABLE IF EXISTS Commodities;"
-query += "DROP TABLE IF EXISTS Case_Groups;"
-query += "DROP TABLE IF EXISTS Staff_Assigned;"
-query += "DROP TABLE IF EXISTS Commissioners;"
-query += "DROP TABLE IF EXISTS Law_Firms;"
-query += "DROP TABLE IF EXISTS Petitioning_Firms;"
-query += "DROP TABLE IF EXISTS date_sequence;"
+query =  "DROP TABLE IF EXISTS Investigations CASCADE;"
+query += "DROP TABLE IF EXISTS Publications CASCADE;"
+query += "DROP TABLE IF EXISTS Determinations CASCADE;"
+query += "DROP TABLE IF EXISTS Country CASCADE;"
+query += "DROP TABLE IF EXISTS Products CASCADE;"
+query += "DROP TABLE IF EXISTS Date_Dim CASCADE;"
+query += "DROP TABLE IF EXISTS Commodities CASCADE;"
+query += "DROP TABLE IF EXISTS Case_Groups CASCADE;"
+query += "DROP TABLE IF EXISTS Staff_Assigned CASCADE;"
+query += "DROP TABLE IF EXISTS Commissioners CASCADE;"
+query += "DROP TABLE IF EXISTS Law_Firms CASCADE;"
+query += "DROP TABLE IF EXISTS Petitioners  CASCADE;"
+query += "DROP TABLE IF EXISTS date_sequence CASCADE;"
+query += "DROP TABLE IF EXISTS ITC_Staff  CASCADE;"
+query += "DROP TABLE IF EXISTS Representations  CASCADE;"
+query += "DROP TABLE IF EXISTS Scopes  CASCADE;"
+
 
 cur.execute(query)
 
@@ -49,7 +54,7 @@ query = "CREATE TABLE Country ( \
 cur.execute(query)
 
 #make dataframe for Country
-df_Country = df[['Country', 'Trade_Relationship']].copy()
+df_Country = c_df[['Country', 'Trade_Relationship']].copy()
 df_Country.drop_duplicates(inplace=True)
 df_Country = df_Country.reset_index(drop=True)
 df_Country.reset_index(inplace=True)
@@ -72,7 +77,7 @@ query = "CREATE TABLE Products (
 cur.execute(query)
 
 #make dataframe for Products
-df_Products = df[['Products']].copy()
+df_Products = p_df[['Products']].copy()
 df_Products.drop_duplicates(inplace=True)
 df_Products = df_Products.reset_index(drop=True)
 df_Products.reset_index(inplace=True)
@@ -182,6 +187,23 @@ for index, row in df_Commissioners.iterrows():
     query = f"insert into Country (ID, Commissioner_Name, Title) values ({row['index']}, '{row['Commissioners']}', {row['Title']});"
     cur.execute(query)
 	
+
+#create Staff_Assigned table
+query = "CREATE TABLE Staff_Assigned  ( \
+    ID char(10) NOT NULL, \
+    Name varchar(150), \
+    Title varchar(150), \
+	PRIMARY KEY (ID) \
+    );"
+
+#create Law_Firms table
+query = "CREATE TABLE Law_Firms   ( 
+    Firm_Name varchar(150) NOT NULL, \
+    Lead varchar(150) NOT NULL, \
+	PRIMARY KEY (Firm_Name,Lead) \
+    );"
+
+
 
 
 cur.close()
