@@ -140,38 +140,26 @@ ORDER BY date ASC
 cur.execute(query)
 
 
-#make dataframe for Laptop
-df_Laptop = df[['employee_id', 'serial_number','date_assigned','manufacturer', 'model','department']].copy()
-df_Laptop.drop_duplicates(inplace=True)
-
-#insert data into Laptop table
-for index, row in df_Laptop.iterrows():
-    mid = model_dict[row['model']]
-    fid = manufacturer_dict[row['manufacturer']]
-    did = dpart_dict[row['department']]
-    query = "insert into Laptop (employee_id, serial_number,date_assigned, manufacturer_id, model_id, department_id) values "
-    query += f"({row['employee_id']}, '{row['serial_number']}','{row['date_assigned']}',{fid},{mid},{did});"
-    cur.execute(query)
-
-
-#create Software table
-query = "create table Software (\
-            serial_number varchar(10) NOT NULL, \
-            installed_software varchar(100) NOT NULL, \
-            FOREIGN KEY (serial_number) REFERENCES Laptop (serial_number) \
+#create Commodities table
+query = "CREATE TABLE Commodities (
+    HS_codes char(3) NOT NULL, \
+    HS_description varchar(500), \
+	PRIMARY KEY (HS_Codes)
          );"
 cur.execute(query)
 
-#make dataframe for Software
-df_Software = df[['serial_number', 'installed_software']].copy()
-df_Software = df_Software[df_Software['installed_software'].notna()]
-df_Software.drop_duplicates(inplace=True)
+#make dataframe for Commodities
+df_Commodities = df[['HS_codes', 'HS_description']].copy()
+df_Commodities = df_Commodities[df_Commodities['HS_codes'].notna()]
+df_Commodities.drop_duplicates(inplace=True)
 
-#insert data into Software table
-for index, row in df_Software.iterrows():
-    softlst = row['installed_software'].split(", ")
-    for soft in softlst:
-        query = f"insert into Software (serial_number, installed_software) values ('{row['serial_number']}', '{soft}');"
+#insert data into Commodities table
+for index, row in df_Commodities.iterrows():
+    for comd in softlst:
+        query = f"insert into Software (HS_codes, HS_description) values ('{row['HS_codes']}', '{comd}');"
         cur.execute(query)
+	
+	
+
 
 cur.close()
