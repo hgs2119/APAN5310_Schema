@@ -156,7 +156,7 @@ df_Commodities.drop_duplicates(inplace=True)
 #Insert data into Commodities table
 for index, row in df_Commodities.iterrows():
     for comd in softlst:
-        query = f"insert into Software (HS_codes, HS_description) values ('{row['HS_codes']}', '{comd}');"
+        query = f"insert into Commodities (HS_codes, HS_description) values ('{row['HS_codes']}', '{comd}');"
         cur.execute(query)
 
 #create Commissioners table
@@ -176,7 +176,7 @@ query = "CREATE TABLE Commissioners(
 cur.execute(query)
 
 #Make dataframe for Commissioners
-df_Commissioners = df[['ID', 'Term_end_date']].copy()
+df_Commissioners = df[['ID', 'Commissioner_Name','Term_begin_date', 'Term_end_date']].copy()
 df_Commissioners.drop_duplicates(inplace=True)
 df_Commissioners = df_Commissioners.reset_index(drop=True)
 df_Commissioners.reset_index(inplace=True)
@@ -185,7 +185,7 @@ df_Commissioners.reset_index(inplace=True)
 Commissioners_dict = {}
 for index, row in df_Commissioners.iterrows():
     Commissioners_dict[row['Commissioners']] = row['index']
-    query = f"insert into Country (ID, Commissioner_Name, Title) values ({row['index']}, '{row['Commissioners']}', {row['Title']});"
+    query = f"insert into Country (ID, Commissioner_Name, Term_begin_date,Term_end_date) values ({row['index']}, '{row['Commissioners']}', {row['Title']});"
     cur.execute(query)
 	
 #Create Law_Firms table
