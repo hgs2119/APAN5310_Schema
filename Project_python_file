@@ -5,7 +5,7 @@ import psycopg2
 import os
 
 #Load files
-main_df = pd.read_csv(".csv") 
+main_df = pd.read_csv(".csv") #Please insert filename
 prod_df = pd.read_csv("products.csv") 
 c_df = pd.read_csv("country.csv") 
 comm_df = pd.read_csv("commissioners.csv") 
@@ -48,7 +48,7 @@ cur.execute(query)
 
 #Create Country table
 query = "CREATE TABLE Country ( \
-    Country_Code char(3) NOT NULL,\
+    Country_Code char(4) NOT NULL,\
     Country_Name varchar(100),\
     Region varchar(100),\
     Trade_Relationship varchar(50),\
@@ -71,7 +71,7 @@ for index, row in df_Country.iterrows():
 
 #Create Products table
 query = "CREATE TABLE Products (
-    Product_ID char(3) NOT NULL,\
+    Product_ID char(2) NOT NULL,\
     Product_Name varchar(100),\
     Product_Type varchar(100),\
 	PRIMARY KEY (Country_Code)\
@@ -91,19 +91,15 @@ for index, row in df_Products.iterrows():
     query = f"insert into Manufacturer (Product_ID, Product_Name,Product_Type) values ({row['index']}, '{row['Products']}');"
     cur.execute(query)
     
-   
 #Create date_sequence table
 query = "CREATE TABLE date_sequence (date date NOT NULL)
 )";
 cur.execute(query)
 
 #Insert Records into date_sequence table
-query = "INSERT INTO
-  date_sequence(date)
-SELECT
-  '1960-01-01'::DATE + SEQUENCE.number AS date
-FROM
-  GENERATE_SERIES(0, 27000) AS SEQUENCE (number)
+query = "INSERT INTO date_sequence(date)
+SELECT '1960-01-01'::DATE + SEQUENCE.number AS date
+FROM GENERATE_SERIES(0, 27000) AS SEQUENCE (number)
   )";
 cur.execute(query)
 
@@ -126,7 +122,6 @@ query = "CREATE TABLE date_dim (
 cur.execute(query)
 
 #Insert Records into date_sequence table
-
 query = "INSERT INTO date_dim
 SELECT   \
 date as date,   \
@@ -167,7 +162,7 @@ for index, row in df_Commodities.iterrows():
 
 #create Commissioners table
 query = "CREATE TABLE Commissioners   (
-    ID char(10) NOT NULL, \
+    ID SERIAL NOT NULL, \
     Commissioner_Name varchar(150) NOT NULL, \
     Term_begin_date DATE, \
     Term_end_date DATE, \
@@ -181,13 +176,13 @@ query = "CREATE TABLE Commissioners   (
     );"
 cur.execute(query)
 
-#make dataframe for Commissioners
+#Make dataframe for Commissioners
 df_Commissioners = df[['ID', 'Term_end_date']].copy()
 df_Commissioners.drop_duplicates(inplace=True)
 df_Commissioners = df_Commissioners.reset_index(drop=True)
 df_Commissioners.reset_index(inplace=True)
 
-#insert data into Commissioners table
+#Insert data into Commissioners table
 Commissioners_dict = {}
 for index, row in df_Commissioners.iterrows():
     Commissioners_dict[row['Commissioners']] = row['index']
@@ -212,7 +207,7 @@ cur.execute(query)
 
 #create ITC_Staff table
 query = "CREATE TABLE ITC_Staff  (
-    ID char(10) NOT NULL, \
+    ID SERIAL NOT NULL, \
     Name varchar(150), \
     Title varchar(150), \
 	PRIMARY KEY (ID) \
@@ -313,8 +308,8 @@ cur.execute(query)
     
 #create Staff_Assigned table
 query = "CREATE TABLE Staff_Assigned (
-   Group_ID char(5) NOT NULL, \
-   Staff_ID char(10) NOT NULL, \
+   Group_ID SERIAL NOT NULL, \
+   Staff_ID SERIAL NOT NULL, \
    	PRIMARY KEY (Group_ID, Staff_ID), \
    	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID) \
 	ON DELETE CASCADE \
@@ -335,7 +330,7 @@ cur.execute(query)
     
 #create Representations  table
 query = "CREATE TABLE Representations (
-  Group_ID char(5) NOT NULL, \
+  Group_ID SERIAL NOT NULL, \
   Petitioner_Name varchar(150) NOT NULL, \
   Law_Firm_Name varchar(150) NOT NULL, \
   Law_Lead varchar(150) NOT NULL, \
@@ -362,7 +357,7 @@ cur.execute(query)
 
 #Create Scopes Table
 query = "CREATE TABLE Scopes (
-  Group_ID char(5) NOT NULL, \
+  Group_ID SERIAL NOT NULL, \
   HS_code char(10) NOT NULL, \
   PRIMARY KEY (Group_ID, HS_code), \
   FOREIGN KEY (Group_ID) references Case_Groups(Group_ID) \
