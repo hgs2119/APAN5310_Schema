@@ -10,7 +10,7 @@ prod_df = pd.read_csv("products.csv")
 c_df = pd.read_csv("country.csv") 
 comm_df = pd.read_csv("commissioners.csv") 
 ITC_df = pd.read_csv("ITC_Staff.csv") 
-law_df = pd.read_csv("law_firms.csv") 
+law_df = pd.read_csv("law_firms.csv")
 
 
 #Connect to database
@@ -203,8 +203,8 @@ df_Law_Firms.reset_index(inplace=True)
 #Insert data into Law_Firms table
 Law_Firms_dict = {}
 for index, row in df_Law_Firms.iterrows():
-    Law_Firms_dict[row['Commissioners']] = row['index']
-    query = f"insert into Country (Firm_Nam, Lead) values ({row['index']}, '{row['Commissioners']}', {row['Title']});"
+    Law_Firms_dict[row['Firm_Name']] = row['index']
+    query = f"insert into Country (Firm_Name, Lead) values ({row['index']}, '{row['Commissioners']}', {row['Title']});"
     cur.execute(query)
 
 
@@ -218,15 +218,18 @@ query = "CREATE TABLE ITC_Staff  (
 cur.execute(query)
 
 #Make dataframe for ITC_Staff
-df_ITC_Staff = df[['Name', 'Title]].copy()
+df_ITC_Staff = ITC_df[['Name', 'Title']].copy()
 df_ITC_Staff.drop_duplicates(inplace=True)
 df_ITC_Staff = df_Law_Firms.reset_index(drop=True)
 df_ITC_Staff.reset_index(inplace=True)
 
 
 #Insert data into ITC_Staff table
-
-
+ITC_Staff_dict = {}
+for index, row in df_ITC_Staff.iterrows():
+    ITC_Staff_dict[row['Name']] = row['index']
+    query = f"insert into ITC_Staff (Name, Title) values ({row['index']}, '{row['Products']}');"
+    cur.execute(query)
 
 #create Investigations table
 query = "CREATE TABLE Investigations  (
@@ -262,6 +265,7 @@ query = "CREATE TABLE Petitioners  (
 
 
 
+
 #Insert data into Petitioners table
 
 
@@ -283,8 +287,12 @@ query = "CREATE TABLE Determinations (
 cur.execute(query)
 
 #Make dataframe for Determinations
-
-
+   # prelim determinations
+df_prelim_dets = main_df[['Name', 'Title']].copy()
+df_Dets.drop_duplicates(inplace=True)
+df_Dets = df_Law_Firms.reset_index(drop=True)
+df_Dets.reset_index(inplace=True)
+   # final determinations
 
 #Insert data into Determinations table
 
