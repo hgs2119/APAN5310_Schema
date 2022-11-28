@@ -85,7 +85,7 @@ df_Products.reset_index(inplace=True)
 Products_dict = {}
 for index, row in df_Products.iterrows():
     Products_dict[row['Products']] = row['index']
-    query = f"insert into Manufacturer (Product_ID, Product_Name,Product_Type) values ({row['index']}, '{row['Products']}');"
+    query = f"insert into Products (Product_ID, Product_Name,Product_Type) values ({row['index']}, '{row['Products']}');"
     cur.execute(query)
     
 #Create date_sequence table
@@ -195,10 +195,17 @@ query = "CREATE TABLE Law_Firms   (
 cur.execute(query)
 
 #Make dataframe for Law_Firms
-
+df_Law_Firms = df[['Firm_Name','Lead']].copy()
+df_Law_Firms.drop_duplicates(inplace=True)
+df_Law_Firms = df_Law_Firms.reset_index(drop=True)
+df_Law_Firms.reset_index(inplace=True)
 
 #Insert data into Law_Firms table
-
+Law_Firms_dict = {}
+for index, row in df_Law_Firms.iterrows():
+    Law_Firms_dict[row['Commissioners']] = row['index']
+    query = f"insert into Country (Firm_Nam, Lead) values ({row['index']}, '{row['Commissioners']}', {row['Title']});"
+    cur.execute(query)
 
 
 #create ITC_Staff table
@@ -211,11 +218,13 @@ query = "CREATE TABLE ITC_Staff  (
 cur.execute(query)
 
 #Make dataframe for ITC_Staff
-
+df_ITC_Staff = df[['Name', 'Title]].copy()
+df_ITC_Staff.drop_duplicates(inplace=True)
+df_ITC_Staff = df_Law_Firms.reset_index(drop=True)
+df_ITC_Staff.reset_index(inplace=True)
 
 
 #Insert data into ITC_Staff table
-
 
 
 
