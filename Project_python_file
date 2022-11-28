@@ -1,0 +1,127 @@
+#load librarys
+import pandas as pd
+import numpy as np
+import psycopg2
+import os
+
+#load file 
+os.chdir('C:\\Users\\bucsp\\Desktop\\Hw') #please set directory
+df = pd.read_csv("APAN5310 - HW5 Data.csv")
+
+#connect to database
+conn = psycopg2.connect(
+    host="localhost", 
+    database="postgres", #please change database 
+    user="postgres", #please change user name
+    password="123") #please change password
+
+#create a cursor
+conn.autocommit = True
+cur = conn.cursor()
+
+#if table exist, drop table
+query =  "DROP TABLE IF EXISTS Software;"
+query += "DROP TABLE IF EXISTS Laptop;"
+query += "DROP TABLE IF EXISTS Managing;"
+query += "DROP TABLE IF EXISTS Employee;"
+query += "DROP TABLE IF EXISTS Department;"
+query += "DROP TABLE IF EXISTS Manufacturer;"
+query += "DROP TABLE IF EXISTS Model;"
+
+cur.execute(query)
+
+#create Department table
+query = "create table Department ( \
+        department_id INT NOT NULL,\
+        department_name varchar(100) NOT NULL,\
+        department_budget INT NOT NULL,\
+        PRIMARY KEY (department_id)\
+    );"
+cur.execute(query)
+
+#make dataframe for Department
+df_Department = df[['department', 'department_budget']].copy()
+df_Department.drop_duplicates(inplace=True)
+df_Department = df_Department.reset_index(drop=True)
+df_Department.reset_index(inplace=True)
+
+#insert data into Department table
+dpart_dict = {}
+for index, row in df_Department.iterrows():
+    dpart_dict[row['department']] = row['index']
+    query = f"insert into Department (department_id, department_name, department_budget) values ({row['index']}, '{row['department']}', {row['department_budget']});"
+    cur.execute(query)
+
+
+#create Manufacturer table
+query = "create table Manufacturer (\
+            manufacturer_id INT NOT NULL,\
+            manufacturer_name varchar(100) NOT NULL, \
+            PRIMARY KEY (manufacturer_id) )"
+cur.execute(query)
+
+#make dataframe for Manufacturer
+df_Manufacturer = df[['manufacturer']].copy()
+df_Manufacturer.drop_duplicates(inplace=True)
+df_Manufacturer = df_Manufacturer.reset_index(drop=True)
+df_Manufacturer.reset_index(inplace=True)
+
+#insert data into Manufacturer table
+manufacturer_dict = {}
+for index, row in df_Manufacturer.iterrows():
+    manufacturer_dict[row['manufacturer']] = row['index']
+    query = f"insert into Manufacturer (manufacturer_id, manufacturer_name) values ({row['index']}, '{row['manufacturer']}');"
+    cur.execute(query)
+
+
+#create Laptop table
+query = "create table Laptop (\
+            employee_id INT NOT NULL,\
+            serial_number varchar(10) NOT NULL, \
+            date_assigned DATE, \
+            manufacturer_id INT NOT NULL, \
+            model_id INT NOT NULL, \
+            department_id INT NOT NULL, \
+            PRIMARY KEY (serial_number), \
+            FOREIGN KEY (employee_id) REFERENCES Employee (employee_id), \
+            FOREIGN KEY (manufacturer_id) REFERENCES Manufacturer (manufacturer_id), \
+            FOREIGN KEY (model_id) REFERENCES Model (model_id), \
+            FOREIGN KEY (department_id) REFERENCES Department (department_id) \
+         );"
+cur.execute(query)
+
+#make dataframe for Laptop
+df_Laptop = df[['employee_id', 'serial_number','date_assigned','manufacturer', 'model','department']].copy()
+df_Laptop.drop_duplicates(inplace=True)
+
+#insert data into Laptop table
+for index, row in df_Laptop.iterrows():
+    mid = model_dict[row['model']]
+    fid = manufacturer_dict[row['manufacturer']]
+    did = dpart_dict[row['department']]
+    query = "insert into Laptop (employee_id, serial_number,date_assigned, manufacturer_id, model_id, department_id) values "
+    query += f"({row['employee_id']}, '{row['serial_number']}','{row['date_assigned']}',{fid},{mid},{did});"
+    cur.execute(query)
+
+
+#create Software table
+query = "create table Software (\
+            serial_number varchar(10) NOT NULL, \
+            installed_software varchar(100) NOT NULL, \
+            FOREIGN KEY (serial_number) REFERENCES Laptop (serial_number) \
+         );"
+cur.execute(query)
+
+#make dataframe for Software
+df_Software = df[['serial_number', 'installed_software']].copy()
+df_Software = df_Software[df_Software['installed_software'].notna()]
+df_Software.drop_duplicates(inplace=True)
+
+#insert data into Software table
+for index, row in df_Software.iterrows():
+    softlst = row['installed_software'].split(", ")
+    for soft in softlst:
+        query = f"insert into Software (serial_number, installed_software) values ('{row['serial_number']}', '{soft}');"
+        cur.execute(query)
+
+cur.close()
