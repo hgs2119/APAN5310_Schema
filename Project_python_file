@@ -1,10 +1,10 @@
-#load librarys
+#Load Librarys
 import pandas as pd
 import numpy as np
 import psycopg2
 import os
 
-#load file 
+#Load files
 df = pd.read_csv("APAN5310 - HW5 Data.csv")
 
 #connect to database
@@ -31,12 +31,11 @@ query += "DROP TABLE IF EXISTS Staff_Assigned;"
 query += "DROP TABLE IF EXISTS Commissioners;"
 query += "DROP TABLE IF EXISTS Law_Firms;"
 query += "DROP TABLE IF EXISTS Petitioning_Firms;"
-
+query += "DROP TABLE IF EXISTS date_sequence;"
 
 cur.execute(query)
 
 #create Country table
-
 query = "CREATE TABLE Country ( \
     Country_Code char(3) NOT NULL,\
     Country_Name varchar(100),\
@@ -46,13 +45,11 @@ query = "CREATE TABLE Country ( \
     );"
 cur.execute(query)
 
-
 #make dataframe for Country
 df_Country = df[['Country', 'Trade_Relationship']].copy()
 df_Country.drop_duplicates(inplace=True)
 df_Country = df_Country.reset_index(drop=True)
 df_Country.reset_index(inplace=True)
-
 
 #insert data into Country table
 Country_dict = {}
@@ -61,14 +58,13 @@ for index, row in df_Country.iterrows():
     query = f"insert into Country (Country_Code, Country_Name, Region, Trade_Relationship) values ({row['index']}, '{row['Country']}', {row['Trade_Relationship']});"
     cur.execute(query)
 
-
 #create Products table
 query = "CREATE TABLE Products (
     Product_ID char(3) NOT NULL,\
     Product_Name varchar(100),\
     Product_Type varchar(100),\
 	PRIMARY KEY (Country_Code)\
-        )"
+        );"
         
 cur.execute(query)
 
@@ -84,23 +80,65 @@ for index, row in df_Products.iterrows():
     Products_dict[row['Products']] = row['index']
     query = f"insert into Manufacturer (Product_ID, Product_Name,Product_Type) values ({row['index']}, '{row['Products']}');"
     cur.execute(query)
+    
+   
+#create date_sequence table
+query = "CREATE TABLE date_sequence (date date NOT NULL)
+)";
 
-
-#create Laptop table
-query = "create table Laptop (\
-            employee_id INT NOT NULL,\
-            serial_number varchar(10) NOT NULL, \
-            date_assigned DATE, \
-            manufacturer_id INT NOT NULL, \
-            model_id INT NOT NULL, \
-            department_id INT NOT NULL, \
-            PRIMARY KEY (serial_number), \
-            FOREIGN KEY (employee_id) REFERENCES Employee (employee_id), \
-            FOREIGN KEY (manufacturer_id) REFERENCES Manufacturer (manufacturer_id), \
-            FOREIGN KEY (model_id) REFERENCES Model (model_id), \
-            FOREIGN KEY (department_id) REFERENCES Department (department_id) \
-         );"
 cur.execute(query)
+
+#Insert Records into date_sequence table
+query = "INSERT INTO
+  date_sequence(date)
+SELECT
+  '1960-01-01'::DATE + SEQUENCE.number AS date
+FROM
+  GENERATE_SERIES(0, 27000) AS SEQUENCE (number)
+  )";
+
+cur.execute(query)
+
+#create date_dim table
+query = "CREATE TABLE date_dim (
+  date_value DATE NOT NULL, \
+  day_suffix TEXT NOT NULL, \
+  day_name TEXT NOT NULL, \
+  day_of_week INT NOT NULL, \
+  day_of_month INT NOT NULL, \
+  day_of_year INT NOT NULL, \
+  month INT NOT NULL, \
+  month_name TEXT NOT NULL, \
+  month_name_abbreviated TEXT NOT NULL, \
+  year_value INT NOT NULL, \
+  quarter INT NOT NULL, \
+  first_day_of_week DATE NOT NULL, \
+  last_day_of_week DATE NOT NULL \
+);"
+
+cur.execute(query)
+
+#Insert Records into date_sequence table
+
+query = "INSERT INTO date_dim
+SELECT   \
+date as date,   \
+TO_CHAR(date, 'fmDDth') AS day_suffix,  \
+TO_CHAR(date, 'TMDay') AS day_name, \
+EXTRACT(ISODOW FROM date) AS day_of_week, \ 
+EXTRACT(DAY FROM date) AS day_of_month,  \ 
+EXTRACT(DOY FROM date) AS day_of_year,   \
+EXTRACT(MONTH FROM date) AS month,   \
+TO_CHAR(date, 'TMMonth') AS month_name,   \
+TO_CHAR(date, 'Mon') AS month_name_abbreviated,   \
+EXTRACT(YEAR FROM date) AS year_value,   \
+EXTRACT(quarter FROM date) AS quarter, \
+date + (1 - EXTRACT(ISODOW FROM date))::INT AS first_day_of_week,   date + (7 - EXTRACT(ISODOW FROM date))::INT AS last_day_of_week from date_sequence \
+ORDER BY date ASC
+);"
+
+cur.execute(query)
+
 
 #make dataframe for Laptop
 df_Laptop = df[['employee_id', 'serial_number','date_assigned','manufacturer', 'model','department']].copy()
