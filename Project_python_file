@@ -19,57 +19,70 @@ conn.autocommit = True
 cur = conn.cursor()
 
 #if table exist, drop table
-query =  "DROP TABLE IF EXISTS Software;"
-query += "DROP TABLE IF EXISTS Laptop;"
-query += "DROP TABLE IF EXISTS Managing;"
-query += "DROP TABLE IF EXISTS Employee;"
-query += "DROP TABLE IF EXISTS Department;"
-query += "DROP TABLE IF EXISTS Manufacturer;"
-query += "DROP TABLE IF EXISTS Model;"
+query =  "DROP TABLE IF EXISTS Investigations;"
+query += "DROP TABLE IF EXISTS Publications;"
+query += "DROP TABLE IF EXISTS Determinations;"
+query += "DROP TABLE IF EXISTS Country;"
+query += "DROP TABLE IF EXISTS Products;"
+query += "DROP TABLE IF EXISTS Date_Dim;"
+query += "DROP TABLE IF EXISTS Commodities;"
+query += "DROP TABLE IF EXISTS Case_Groups;"
+query += "DROP TABLE IF EXISTS Staff_Assigned;"
+query += "DROP TABLE IF EXISTS Commissioners;"
+query += "DROP TABLE IF EXISTS Law_Firms;"
+query += "DROP TABLE IF EXISTS Petitioning_Firms;"
+
 
 cur.execute(query)
 
-#create Department table
-query = "create table Department ( \
-        department_id INT NOT NULL,\
-        department_name varchar(100) NOT NULL,\
-        department_budget INT NOT NULL,\
-        PRIMARY KEY (department_id)\
+#create Country table
+
+query = "CREATE TABLE Country ( \
+    Country_Code char(3) NOT NULL,\
+    Country_Name varchar(100),\
+    Region varchar(100),\
+    Trade_Relationship varchar(50),\
+	PRIMARY KEY (Country_Code)\
     );"
 cur.execute(query)
 
-#make dataframe for Department
-df_Department = df[['department', 'department_budget']].copy()
-df_Department.drop_duplicates(inplace=True)
-df_Department = df_Department.reset_index(drop=True)
-df_Department.reset_index(inplace=True)
 
-#insert data into Department table
-dpart_dict = {}
-for index, row in df_Department.iterrows():
-    dpart_dict[row['department']] = row['index']
-    query = f"insert into Department (department_id, department_name, department_budget) values ({row['index']}, '{row['department']}', {row['department_budget']});"
+#make dataframe for Country
+df_Country = df[['Country', 'Trade_Relationship']].copy()
+df_Country.drop_duplicates(inplace=True)
+df_Country = df_Country.reset_index(drop=True)
+df_Country.reset_index(inplace=True)
+
+
+#insert data into Country table
+Country_dict = {}
+for index, row in df_Country.iterrows():
+    dpart_dict[row['Country']] = row['index']
+    query = f"insert into Country (Country_Code, Country_Name, Region, Trade_Relationship) values ({row['index']}, '{row['Country']}', {row['Trade_Relationship']});"
     cur.execute(query)
 
 
-#create Manufacturer table
-query = "create table Manufacturer (\
-            manufacturer_id INT NOT NULL,\
-            manufacturer_name varchar(100) NOT NULL, \
-            PRIMARY KEY (manufacturer_id) )"
+#create Products table
+query = "CREATE TABLE Products (
+    Product_ID char(3) NOT NULL,\
+    Product_Name varchar(100),\
+    Product_Type varchar(100),\
+	PRIMARY KEY (Country_Code)\
+        )"
+        
 cur.execute(query)
 
-#make dataframe for Manufacturer
-df_Manufacturer = df[['manufacturer']].copy()
-df_Manufacturer.drop_duplicates(inplace=True)
-df_Manufacturer = df_Manufacturer.reset_index(drop=True)
-df_Manufacturer.reset_index(inplace=True)
+#make dataframe for Products
+df_Products = df[['Products']].copy()
+df_Products.drop_duplicates(inplace=True)
+df_Products = df_Products.reset_index(drop=True)
+df_Products.reset_index(inplace=True)
 
-#insert data into Manufacturer table
-manufacturer_dict = {}
-for index, row in df_Manufacturer.iterrows():
-    manufacturer_dict[row['manufacturer']] = row['index']
-    query = f"insert into Manufacturer (manufacturer_id, manufacturer_name) values ({row['index']}, '{row['manufacturer']}');"
+#insert data into Products table
+Products_dict = {}
+for index, row in df_Products.iterrows():
+    Products_dict[row['Products']] = row['index']
+    query = f"insert into Manufacturer (Product_ID, Product_Name,Product_Type) values ({row['index']}, '{row['Products']}');"
     cur.execute(query)
 
 
