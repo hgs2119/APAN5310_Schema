@@ -11,14 +11,14 @@ c_df = pd.read_csv("country_table.csv")
 comm_df = pd.read_csv("Commissioners_table.csv") 
 
 
-#connect to database
+#Connect to database
 conn = psycopg2.connect(
     host="localhost", 
     database="postgres", #please change database 
     user="postgres", #please change user name
     password="123") #please change password
 
-#create a cursor
+#Create a cursor
 conn.autocommit = True
 cur = conn.cursor()
 
@@ -65,7 +65,7 @@ for index, row in df_Country.iterrows():
     query = f"insert into Country (Country_Code, Country_Name, Region, Trade_Relationship) values ({row['index']}, '{row['Country']}', {row['Trade_Relationship']});"
     cur.execute(query)
 
-#create Products table
+#Create Products table
 query = "CREATE TABLE Products (
     Product_ID char(3) NOT NULL,\
     Product_Name varchar(100),\
@@ -74,13 +74,13 @@ query = "CREATE TABLE Products (
         );"
 cur.execute(query)
 
-#make dataframe for Products
+#Make dataframe for Products
 df_Products = p_df[['Products']].copy()
 df_Products.drop_duplicates(inplace=True)
 df_Products = df_Products.reset_index(drop=True)
 df_Products.reset_index(inplace=True)
 
-#insert data into Products table
+#Insert data into Products table
 Products_dict = {}
 for index, row in df_Products.iterrows():
     Products_dict[row['Products']] = row['index']
@@ -88,7 +88,7 @@ for index, row in df_Products.iterrows():
     cur.execute(query)
     
    
-#create date_sequence table
+#Create date_sequence table
 query = "CREATE TABLE date_sequence (date date NOT NULL)
 )";
 cur.execute(query)
@@ -103,7 +103,7 @@ FROM
   )";
 cur.execute(query)
 
-#create date_dim table
+#Create date_dim table
 query = "CREATE TABLE date_dim (
   date_value DATE NOT NULL, \
   day_suffix TEXT NOT NULL, \
@@ -142,7 +142,7 @@ ORDER BY date ASC \
 cur.execute(query)
 
 
-#create Commodities table
+#Create Commodities table
 query = "CREATE TABLE Commodities (
     HS_codes char(3) NOT NULL, \
     HS_description varchar(500), \
@@ -150,12 +150,12 @@ query = "CREATE TABLE Commodities (
          );"
 cur.execute(query)
 
-#make dataframe for Commodities
+#Make dataframe for Commodities
 df_Commodities = df[['HS_codes', 'HS_description']].copy()
 df_Commodities = df_Commodities[df_Commodities['HS_codes'].notna()]
 df_Commodities.drop_duplicates(inplace=True)
 
-#insert data into Commodities table
+#Insert data into Commodities table
 for index, row in df_Commodities.iterrows():
     for comd in softlst:
         query = f"insert into Software (HS_codes, HS_description) values ('{row['HS_codes']}', '{comd}');"
@@ -199,6 +199,13 @@ query = "CREATE TABLE Law_Firms   (
     );"
 cur.execute(query)
 
+#Make dataframe for Law_Firms
+
+
+#Insert data into Law_Firms table
+
+
+
 #create ITC_Staff table
 query = "CREATE TABLE ITC_Staff  (
     ID char(10) NOT NULL, \
@@ -207,6 +214,15 @@ query = "CREATE TABLE ITC_Staff  (
 	PRIMARY KEY (ID) \
     );"
 cur.execute(query)
+
+#Make dataframe for ITC_Staff
+
+
+
+#Insert data into ITC_Staff table
+
+
+
 
 #create Investigations table
 query = "CREATE TABLE Investigations  (
@@ -219,7 +235,15 @@ query = "CREATE TABLE Investigations  (
     );"
 cur.execute(query)
 
-#create Investigations table
+#Make dataframe for Investigations
+
+
+
+#Insert data into Investigations table
+
+
+
+#create Petitioners table
 query = "CREATE TABLE Petitioners  (
     Firm_Name varchar(150) NOT NULL, \
     Group_ID char(5) NOT NULL, \
@@ -229,6 +253,15 @@ query = "CREATE TABLE Petitioners  (
 	ON UPDATE CASCADE \
     );"
  cur.execute(query)
+ 
+#Make dataframe for Petitioners
+
+
+
+#Insert data into Petitioners table
+
+
+
  
  #create Determinations  table
 query = "CREATE TABLE Determinations (
@@ -245,6 +278,14 @@ query = "CREATE TABLE Determinations (
     );"
 cur.execute(query)
 
+#Make dataframe for Determinations
+
+
+
+#Insert data into Determinations table
+
+
+
 #create Publications table
 query = "CREATE TABLE Publications (
     Pub_No char(4), \
@@ -257,6 +298,14 @@ query = "CREATE TABLE Publications (
     CHECK (Phase IN ('Prelim', 'Final', 'Review')) \
     );"
 cur.execute(query)  
+
+#Make dataframe for Publications
+
+
+
+#Insert data into Publications table
+
+
     
 #create Staff_Assigned table
 query = "CREATE TABLE Staff_Assigned (
@@ -271,6 +320,14 @@ query = "CREATE TABLE Staff_Assigned (
 	ON UPDATE CASCADE \
     );"
 cur.execute(query)
+
+#Make dataframe for Staff_Assigned
+
+
+
+#Insert data into Staff_Assigned table
+
+
     
 #create Representations  table
 query = "CREATE TABLE Representations (
@@ -291,6 +348,14 @@ query = "CREATE TABLE Representations (
     );"
 cur.execute(query)
 
+#Make dataframe for Representations
+
+
+
+#Insert data into Representations table
+
+
+
 #Create Scopes Table
 query = "CREATE TABLE Scopes (
   Group_ID char(5) NOT NULL, \
@@ -304,5 +369,13 @@ query = "CREATE TABLE Scopes (
   ON UPDATE CASCADE \
     );"
 cur.execute(query)
+
+#Make dataframe for Scopes
+
+
+
+#Insert data into Scopes table
+
+
 
 cur.close()
