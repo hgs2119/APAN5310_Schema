@@ -56,7 +56,7 @@ CREATE TABLE Commodities (
 
 CREATE TABLE Case_Groups (
     Group_ID char(5) NOT NULL,
-    Group_Name varchar(150) NOT NULL,
+    product_from_countries  varchar(150) NOT NULL,
     Product_ID char(3) NOT NULL,
 	PRIMARY KEY (Group_ID),
     FOREIGN KEY (Product_ID) references Products(Product_ID)
@@ -97,6 +97,7 @@ CREATE TABLE Investigations  (
     Country_Code char(5) NOT NULL,
     Product_ID char(3) NOT NULL,
     Group_ID char(5) NOT NULL,
+    Investigation_Title char(10) NOT NULL,
 	PRIMARY KEY (Investigation_Number)
 	);
 
@@ -121,16 +122,6 @@ CREATE TABLE Determinations (
 	CHECK (Determination IN ('Affirmative', 'Negative', 'Terminated'))
 );
 
-CREATE TABLE Investigations_Title  (
-    Investigation_Number varchar(11) NOT NULL,
-    Investigation_Type varchar(100),
-    Investigation_Title char(10) NOT NULL,
-	PRIMARY KEY (Investigation_Number),
-	FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number)
-	ON DELETE CASCADE
-	ON UPDATE CASCADE
-    
-);
 
 CREATE TABLE Publications (
     Pub_No char(4),
