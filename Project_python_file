@@ -40,10 +40,9 @@ query += "DROP TABLE IF EXISTS ITC_Staff  CASCADE;"
 query += "DROP TABLE IF EXISTS Representations  CASCADE;"
 query += "DROP TABLE IF EXISTS Scopes  CASCADE;"
 
-
 cur.execute(query)
 
-#create Country table
+#Create Country table
 query = "CREATE TABLE Country ( \
     Country_Code char(3) NOT NULL,\
     Country_Name varchar(100),\
@@ -53,13 +52,13 @@ query = "CREATE TABLE Country ( \
     );"
 cur.execute(query)
 
-#make dataframe for Country
+#Make dataframe for Country
 df_Country = c_df[['Country', 'Trade_Relationship']].copy()
 df_Country.drop_duplicates(inplace=True)
 df_Country = df_Country.reset_index(drop=True)
 df_Country.reset_index(inplace=True)
 
-#insert data into Country table
+#Insert data into Country table
 Country_dict = {}
 for index, row in df_Country.iterrows():
     Country_dict[row['Country']] = row['index']
