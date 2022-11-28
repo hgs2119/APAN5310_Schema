@@ -26,7 +26,7 @@ conn = psycopg2.connect(
 conn.autocommit = True
 cur = conn.cursor()
 
-#if table exist, drop table
+#If table exist, Drop Table
 query =  "DROP TABLE IF EXISTS Investigations CASCADE;"
 query += "DROP TABLE IF EXISTS Publications CASCADE;"
 query += "DROP TABLE IF EXISTS Determinations CASCADE;"
@@ -43,7 +43,6 @@ query += "DROP TABLE IF EXISTS date_sequence CASCADE;"
 query += "DROP TABLE IF EXISTS ITC_Staff  CASCADE;"
 query += "DROP TABLE IF EXISTS Representations  CASCADE;"
 query += "DROP TABLE IF EXISTS Scopes  CASCADE;"
-
 cur.execute(query)
 
 #Create Country table
@@ -57,7 +56,7 @@ query = "CREATE TABLE Country ( \
 cur.execute(query)
 
 #Make dataframe for Country
-df_Country = c_df[['Country', 'Trade_Relationship']].copy()
+df_Country = c_df[['Country_Code', 'Country_Name','Region' , 'Trade_Relationship']].copy()
 df_Country.drop_duplicates(inplace=True)
 df_Country = df_Country.reset_index(drop=True)
 df_Country.reset_index(inplace=True)
@@ -79,7 +78,7 @@ query = "CREATE TABLE Products (
 cur.execute(query)
 
 #Make dataframe for Products
-df_Products = prod_df[['Products']].copy()
+df_Products = prod_df[['Product_ID',Product_Name,Product_Type]].copy()
 df_Products.drop_duplicates(inplace=True)
 df_Products = df_Products.reset_index(drop=True)
 df_Products.reset_index(inplace=True)
@@ -161,7 +160,7 @@ for index, row in df_Commodities.iterrows():
         cur.execute(query)
 
 #create Commissioners table
-query = "CREATE TABLE Commissioners   (
+query = "CREATE TABLE Commissioners(
     ID SERIAL NOT NULL, \
     Commissioner_Name varchar(150) NOT NULL, \
     Term_begin_date DATE, \
@@ -189,8 +188,7 @@ for index, row in df_Commissioners.iterrows():
     query = f"insert into Country (ID, Commissioner_Name, Title) values ({row['index']}, '{row['Commissioners']}', {row['Title']});"
     cur.execute(query)
 	
-
-#create Law_Firms table
+#Create Law_Firms table
 query = "CREATE TABLE Law_Firms   ( 
     Firm_Name varchar(150) NOT NULL, \
     Lead varchar(150) NOT NULL, \
