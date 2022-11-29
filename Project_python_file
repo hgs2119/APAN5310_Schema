@@ -227,8 +227,8 @@ df_ITC_Staff.reset_index(inplace=True)
 #Insert data into ITC_Staff table
 ITC_Staff_dict = {}
 for index, row in df_ITC_Staff.iterrows():
-    ITC_Staff_dict[row['Name']] = row['index']
-    query = f"insert into ITC_Staff (Name, Title) values ({row['index']}, '{row['Products']}');"
+    ITC_Staff_dict[row['Staff']] = row['index']
+    query = f"insert into ITC_Staff (Name, Title) values ({row['index']}, '{row['Staff']}');"
     cur.execute(query)
 
 #create Investigations table
@@ -286,18 +286,6 @@ query = "CREATE TABLE Determinations (
     );"
 cur.execute(query)
 
-#Make dataframe for Determinations
-   # prelim determinations
-df_prelim_dets = main_df[['Name', 'Title']].copy()
-df_Dets.drop_duplicates(inplace=True)
-df_Dets = df_Law_Firms.reset_index(drop=True)
-df_Dets.reset_index(inplace=True)
-   # final determinations
-
-#Insert data into Determinations table
-
-
-
 #create Publications table
 query = "CREATE TABLE Publications (
     Pub_No char(4), \
@@ -311,13 +299,47 @@ query = "CREATE TABLE Publications (
     );"
 cur.execute(query)  
 
-#Make dataframe for Publications
+# make publications and determinations df
+    # select prelim investigations only
+df_Pubs_Prelim = main_df.iloc[:,[0,4,5,6]].copy()
+        # add prelim as phase
+df_Pubs_Prelim['phase'] = 'Prelim'
+        # rename columns to match schema
+df_Pubs_Prelim.rename(columns = {"Staff Conference": "hearing_date", "Preliminary Determination": "determination"})
+    # select final investigations only
+df_Pubs_Final = main_df.iloc[:,[0,7,8,9]]
+        # add final as phase
+df_Pubs_Final['phase'] = 'Final'
+        # rename columns to match schema
+df_Pubs_Final.rename(columns = {"Final Determination": "determination", "pub_no.1": "pub_no"})
+    #create union of phase dfs
+df_pubs_dets_by_phase = pd.concat([df_Pubs_Prelim, df_Pubs_Final])
+df_Pubs_Prelim.head()
+df_Pubs_Final.head()
+df_pubs_dets_by_phase.head()
+    # Make dataframe for determinations
+df_determinations = df_pubs_dets_by_phase[['investigation_number', 'phase', 'hearing_date', 'determination']].copy()
+df_determinations = df_determinations.reset_index(drop=True)
+df_determinations.reset_index(inplace=True)
+    # Make dataframe for publications (drop dupes to eliminate duplicated rows for country and determination)
+df_publications = df_pubs_dets_by_phase[['pub_no', 'phase', 'investigation_number']]
+df.publications.drop_duplicates(inplace=True)
+df_publications = df_publications.reset_index(drop=True)
+df_publications.reset_index(inplace=True)
 
-
-
-#Insert data into Publications table
-
-
+#Insert data into determinations table
+Determinations_dict = {}
+for index, row in df_determinations.iterrows():
+    Determinations_dict[row['Determination']] = row['index']
+    query = f"insert into Determinations (Investigation_number, phase, hearing_date, determinations) values ({row['index']}, '{row['Determination']}');"
+    cur.execute(query)
+    
+#Insert data into publications table
+Pubs_dict = {}
+for index, row in df_publications.iterrows():
+    Pubs_dict[row['Publication']] = row['index']
+    query = f"insert into Publications (pub_no, phase, investigation_number) values ({row['index']}, '{row['Publication']}');"
+    cur.execute(query)
     
 #create Staff_Assigned table
 query = "CREATE TABLE Staff_Assigned (
