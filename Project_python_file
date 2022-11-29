@@ -11,6 +11,9 @@ c_df = pd.read_csv("country.csv")
 comm_df = pd.read_csv("commissioners.csv") 
 ITC_df = pd.read_csv("ITC_Staff.csv") 
 law_df = pd.read_csv("law_firms.csv")
+Pet_df = pd.read_csv("_filename.csv")     #filename to be changed. Petitioners name used in code
+Rep_df = pd.read_csv("_filename.csv")     #filename to be changed. Representations name used in code
+staffAssigned_df = pd.read_cvs("_filename.csv") 	#filename to be changed. StaffAssigned name used in code
 
 
 #Connect to database
@@ -298,14 +301,21 @@ query = "CREATE TABLE Petitioners  (
     );"
  cur.execute(query)
  
-#Make dataframe for Petitioners
+#Make dataframe for Petitioners 	#Please check
+
+df_petitioners = Pet_df[['firm_name', 'group_id']].copy()
+df_petitioners.drop_duplicates(inplace=True)
+df_petitioners = df_petitioners.reset_index(drop=True)
+df_petitioners.reset_index(inplace=True)
 
 
+#Insert data into Petitioners table	#Please check
 
-
-#Insert data into Petitioners table
-
-
+Pets_dict = {}
+for index, row in df_petitioners.iterrows():
+    Pets_dict[row['Petitioners']] = row['index']
+    query = f"insert into Petitioners (firm_name, group_id) values ({row['index']}, '{row['Petitioners']}');"
+    cur.execute(query)
 
  
  #create Determinations  table
@@ -392,12 +402,19 @@ query = "CREATE TABLE Staff_Assigned (
     );"
 cur.execute(query)
 
-#Make dataframe for Staff_Assigned
+#Make dataframe for Staff_Assigned		#Please check
 
+df_StaffAssigned = staff_df[['group_id', 'staff_id']].copy()
+df_StaffAssigned.drop_duplicates(inplace=True)
+df_StaffAssigned = df_StaffAssigned.reset_index(drop=True)
+df_StaffAssigned.reset_index(inplace=True)
 
-
-#Insert data into Staff_Assigned table
-
+#Insert data into Staff_Assigned table 		#Please check
+staff_dict = {}
+for index, row in df_StaffAssigned.iterrows():
+    Pubs_dict[row['StaffAssigned']] = row['index']
+    query = f"insert into df_StaffAssigned (group_id, staff_id) values ({row['index']}, '{row['StaffAssigned']}');"
+    cur.execute(query)
 
     
 #create Representations  table
@@ -419,12 +436,20 @@ query = "CREATE TABLE Representations (
     );"
 cur.execute(query)
 
-#Make dataframe for Representations
+#Make dataframe for Representations	#Please check
+
+df_representations = Rep_df[['group_id', 'petitioner_name', 'law_firm_name', 'law_lead']].copy()
+df_representations.drop_duplicates(inplace=True)
+df_representations = df_representations.reset_index(drop=True)
+df_representations.reset_index(inplace=True)
 
 
-
-#Insert data into Representations table
-
+#Insert data into Representations table #Please check
+Rep_dict = {}
+for index, row in df_representations.iterrows():
+    Rep_dict[row['Representations']] = row['index']
+    query = f"insert into Representations (group_id, petitioner_name, law_firm_name, law_lead) values ({row['index']}, '{row['Representations']}');"
+    cur.execute(query)
 
 
 #Create Scopes Table
