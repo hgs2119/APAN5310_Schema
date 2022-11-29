@@ -305,13 +305,13 @@ df_Pubs_Prelim = main_df.iloc[:,[0,4,5,6]].copy()
         # add prelim as phase
 df_Pubs_Prelim['phase'] = 'Prelim'
         # rename columns to match schema
-df_Pubs_Prelim.rename(columns = {"Staff Conference": "hearing_date", "Preliminary Determination": "determination"})
+df_Pubs_Prelim = df_Pubs_Prelim.rename(columns = {"Staff Conference": "hearing_date", "Preliminary Determination": "determination"})
     # select final investigations only
 df_Pubs_Final = main_df.iloc[:,[0,7,8,9]]
         # add final as phase
 df_Pubs_Final['phase'] = 'Final'
         # rename columns to match schema
-df_Pubs_Final.rename(columns = {"Final Determination": "determination", "pub_no.1": "pub_no"})
+df_Pubs_Final = df_Pubs_Final.rename(columns = {"Final Determination": "determination", "pub_no.1": "pub_no"})
     #create union of phase dfs
 df_pubs_dets_by_phase = pd.concat([df_Pubs_Prelim, df_Pubs_Final])
 df_Pubs_Prelim.head()
@@ -323,7 +323,7 @@ df_determinations = df_determinations.reset_index(drop=True)
 df_determinations.reset_index(inplace=True)
     # Make dataframe for publications (drop dupes to eliminate duplicated rows for country and determination)
 df_publications = df_pubs_dets_by_phase[['pub_no', 'phase', 'investigation_number']]
-df.publications.drop_duplicates(inplace=True)
+df_publications.drop_duplicates(inplace=True)
 df_publications = df_publications.reset_index(drop=True)
 df_publications.reset_index(inplace=True)
 
