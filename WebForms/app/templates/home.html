@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+	<div class="col text-center pt-5">
+		<h1>Group 5</h1>
+		<h2>ITC Case Database Update</h2>
+		<p>
+			<a href="{{ url_for('newcase') }}">Add New Investigation(s)</a>
+			<br>
+			<a href="{{ url_for('updatecase') }}">Update Existing Investigation(s)</a>
+		</p>
+	</div>
+</div>
+
+{% endblock %}
