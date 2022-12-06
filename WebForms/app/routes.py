@@ -35,6 +35,7 @@ def updatecase():
     form = UpdateCaseForm()
     if form.validate_on_submit():
         pub_no = form.pub_no.data
+        phase = form.phase.data
         ad_investigation_number = form.ad_investigation_number.data
         ad_determination = form.ad_determination.data
         cvd_investigation_number = form.cvd_investigation_number.data
