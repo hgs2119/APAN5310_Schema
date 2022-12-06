@@ -17,6 +17,7 @@ class NewCaseForm(FlaskForm):
 
 class UpdateCaseForm(FlaskForm):
     pub_no = IntegerField('Publication Number', validators=[DataRequired()])
+    phase = StringField('Investigation Phase', choices=[('prelim','Prelim'), ('final', 'Final'), ('review', 'Sunset Review')])
     ad_investigation_number = StringField('AD Investigation Number(s)')
     ad_determination = SelectField('AD Determination', choices=[('','None'), ('affirmative', 'Affirmative'), ('negative', 'Negative'), ('terminated', 'Terminated')])
     cvd_investigation_number = StringField('CVD Investigation Number(s)')
