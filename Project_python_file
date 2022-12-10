@@ -8,6 +8,7 @@ import os
 main_df = pd.read_csv("dataset.csv")
 prod_df = pd.read_csv("products.csv") 
 c_df = pd.read_csv("country.csv") 
+commodities_df = pd.read_csv("commodities.csv") 
 comm_df = pd.read_csv("commissioners.csv") 
 ITC_df = pd.read_csv("ITC_Staff.csv") 
 law_df = pd.read_csv("law_firms.csv")
@@ -123,23 +124,23 @@ query = "CREATE TABLE date_dim ( \
 cur.execute(query)
 
 #Insert Records into date_sequence table
-query = "INSERT INTO date_dim \
-SELECT \
-date as date,   \
-TO_CHAR(date, 'fmDDth') AS day_suffix,  \
-TO_CHAR(date, 'TMDay') AS day_name, \
-EXTRACT(ISODOW FROM date) AS day_of_week, \ 
-EXTRACT(DAY FROM date) AS day_of_month, \ 
-EXTRACT(DOY FROM date) AS day_of_year,   \
-EXTRACT(MONTH FROM date) AS month,   \
-TO_CHAR(date, 'TMMonth') AS month_name,   \
-TO_CHAR(date, 'Mon') AS month_name_abbreviated,   \
-EXTRACT(YEAR FROM date) AS year_value,   \
-EXTRACT(quarter FROM date) AS quarter, \
-date + (1 - EXTRACT(ISODOW FROM date))::INT AS first_day_of_week,   date + (7 - EXTRACT(ISODOW FROM date))::INT AS last_day_of_week from date_sequence \
-ORDER BY date ASC \
-);"
-cur.execute(query)
+#query = "INSERT INTO date_dim \
+#SELECT \
+#date as date, \
+#TO_CHAR(date, 'fmDDth') AS day_suffix,  \
+#TO_CHAR(date, 'TMDay') AS day_name, \
+#EXTRACT(ISODOW FROM date) AS day_of_week, \ 
+#EXTRACT(DAY FROM date) AS day_of_month, \ 
+#EXTRACT(DOY FROM date) AS day_of_year,   \
+#EXTRACT(MONTH FROM date) AS month,   \
+#TO_CHAR(date, 'TMMonth') AS month_name,   \
+#TO_CHAR(date, 'Mon') AS month_name_abbreviated,   \
+#EXTRACT(YEAR FROM date) AS year_value,   \
+#EXTRACT(quarter FROM date) AS quarter, \
+#date + (1 - EXTRACT(ISODOW FROM date))::INT AS first_day_of_week,   date + (7 - EXTRACT(ISODOW FROM date))::INT AS last_day_of_week from date_sequence \
+#ORDER BY date ASC \
+#);"
+#cur.execute(query)
 
 
 #Create Commodities table
@@ -151,7 +152,7 @@ query = "CREATE TABLE Commodities ( \
 cur.execute(query)
 
 #Make dataframe for Commodities
-df_Commodities = df[['HS_codes', 'HS_description']].copy()
+df_Commodities = commodities_df[['HS_codes', 'HS_description']].copy()
 df_Commodities = df_Commodities[df_Commodities['HS_codes'].notna()]
 df_Commodities.drop_duplicates(inplace=True)
 
@@ -178,7 +179,7 @@ query = "CREATE TABLE Commissioners( \
 cur.execute(query)
 
 #Make dataframe for Commissioners
-df_Commissioners = df[['ID', 'Commissioner_Name','Term_begin_date', 'Term_end_date']].copy()
+df_Commissioners = comm_df[['ID', 'Commissioner_Name','Term_begin_date', 'Term_end_date']].copy()
 df_Commissioners.drop_duplicates(inplace=True)
 df_Commissioners = df_Commissioners.reset_index(drop=True)
 df_Commissioners.reset_index(inplace=True)
@@ -199,7 +200,7 @@ query = "CREATE TABLE Law_Firms   (  \
 cur.execute(query)
 
 #Make dataframe for Law_Firms
-df_Law_Firms = df[['Firm_Name','Lead']].copy()
+df_Law_Firms = law_df[['Firm_Name','Lead']].copy()
 df_Law_Firms.drop_duplicates(inplace=True)
 df_Law_Firms = df_Law_Firms.reset_index(drop=True)
 df_Law_Firms.reset_index(inplace=True)
@@ -406,7 +407,7 @@ cur.execute(query)
 
 #Make dataframe for Staff_Assigned		#Please check
 
-df_StaffAssigned = staff_df[['group_id', 'staff_id']].copy()
+df_StaffAssigned = staffAssigned_df[['group_id', 'staff_id']].copy()
 df_StaffAssigned.drop_duplicates(inplace=True)
 df_StaffAssigned = df_StaffAssigned.reset_index(drop=True)
 df_StaffAssigned.reset_index(inplace=True)
