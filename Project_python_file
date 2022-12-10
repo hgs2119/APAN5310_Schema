@@ -159,6 +159,7 @@ df_Commodities = df_Commodities[df_Commodities['HS_codes'].notna()]
 df_Commodities.drop_duplicates(inplace=True)
 
 #Insert data into Commodities table
+softlst = {}
 for index, row in df_Commodities.iterrows():
     for comd in softlst:
         query = f"insert into Commodities (HS_codes, HS_description) values ('{row['HS_codes']}', '{comd}');"
