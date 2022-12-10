@@ -71,7 +71,7 @@ for index, row in df_Country.iterrows():
 
 #Create Products table
 query = "CREATE TABLE Products (
-    Product_ID char(2) NOT NULL,\
+    Product_ID SERIAL NOT NULL,\
     Product_Name varchar(100),\
     Product_Type varchar(100),\
 	PRIMARY KEY (Country_Code)\
@@ -236,7 +236,7 @@ for index, row in df_ITC_Staff.iterrows():
 
 #create Case_Groups table
 query = "CREATE TABLE Case_Groups (
-    Group_ID char(5) NOT NULL,
+    Group_ID SERIAL NOT NULL,
     product_from_countries  varchar(150) NOT NULL,
     Product_ID char(3) NOT NULL,
 	PRIMARY KEY (Group_ID),
@@ -247,9 +247,9 @@ query = "CREATE TABLE Case_Groups (
 #create Investigations table
 query = "CREATE TABLE Investigations  (
     Investigation_Number varchar(11) NOT NULL, \
-    Country_Code char(5) NOT NULL, \
+    Country_Code char(4) NOT NULL, \
     Product_ID char(3) NOT NULL, \
-    Group_ID char(5) NOT NULL, \
+    Group_ID SERIAL NOT NULL, \
     Investigation_Title char(10) NOT NULL, \
 	PRIMARY KEY (Investigation_Number) \
     );"
@@ -293,7 +293,7 @@ for index, row in df_investigations.iterrows():
 #create Petitioners table
 query = "CREATE TABLE Petitioners  (
     Firm_Name varchar(150) NOT NULL, \
-    Group_ID char(5) NOT NULL, \
+    Group_ID SERIAL NOT NULL, \
 	PRIMARY KEY (Firm_Name, Group_ID), \
     	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID) \
 	ON DELETE CASCADE \
