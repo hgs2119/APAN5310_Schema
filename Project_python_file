@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import psycopg2
 import os
+import sqlalchemy
+
 
 #Load files
 main_df = pd.read_csv("dataset.csv")
