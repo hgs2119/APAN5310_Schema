@@ -11,9 +11,9 @@ c_df = pd.read_csv("country.csv")
 comm_df = pd.read_csv("commissioners.csv") 
 ITC_df = pd.read_csv("ITC_Staff.csv") 
 law_df = pd.read_csv("law_firms.csv")
-Pet_df = pd.read_csv("_filename.csv")     #filename to be changed. Petitioners name used in code
-Rep_df = pd.read_csv("_filename.csv")     #filename to be changed. Representations name used in code
-staffAssigned_df = pd.read_cvs("_filename.csv") 	#filename to be changed. StaffAssigned name used in code
+Pet_df = pd.read_csv("Petitioners.csv")     #filename to be changed. Petitioners name used in code
+Rep_df = pd.read_csv("Representations.csv")     #filename to be changed. Representations name used in code
+staffAssigned_df = pd.read_cvs("StaffAssigned.csv") 	#filename to be changed. StaffAssigned name used in code
 
 
 #Connect to database
@@ -71,7 +71,7 @@ for index, row in df_Country.iterrows():
     cur.execute(query)
 
 #Create Products table
-query = "CREATE TABLE Products (
+query = "CREATE TABLE Products ( \
     Product_ID SERIAL NOT NULL,\
     Product_Name varchar(100),\
     Product_Type varchar(100),\
@@ -80,7 +80,7 @@ query = "CREATE TABLE Products (
 cur.execute(query)
 
 #Make dataframe for Products
-df_Products = prod_df[['Product_ID',Product_Name,Product_Type]].copy()
+df_Products = prod_df[['Product_ID','Product_Name','Product_Type']].copy()
 df_Products.drop_duplicates(inplace=True)
 df_Products = df_Products.reset_index(drop=True)
 df_Products.reset_index(inplace=True)
@@ -93,19 +93,19 @@ for index, row in df_Products.iterrows():
     cur.execute(query)
     
 #Create date_sequence table
-query = "CREATE TABLE date_sequence (date date NOT NULL)
+query = "CREATE TABLE date_sequence (date date NOT NULL) \
 )";
 cur.execute(query)
 
 #Insert Records into date_sequence table
-query = "INSERT INTO date_sequence(date)
-SELECT '1960-01-01'::DATE + SEQUENCE.number AS date
-FROM GENERATE_SERIES(0, 27000) AS SEQUENCE (number)
+query = "INSERT INTO date_sequence(date) \
+SELECT '1960-01-01'::DATE + SEQUENCE.number AS date \
+FROM GENERATE_SERIES(0, 27000) AS SEQUENCE (number) \
   )";
 cur.execute(query)
 
 #Create date_dim table
-query = "CREATE TABLE date_dim (
+query = "CREATE TABLE date_dim ( \
   date_value DATE NOT NULL, \
   day_suffix TEXT NOT NULL, \
   day_name TEXT NOT NULL, \
@@ -123,13 +123,13 @@ query = "CREATE TABLE date_dim (
 cur.execute(query)
 
 #Insert Records into date_sequence table
-query = "INSERT INTO date_dim
-SELECT   \
+query = "INSERT INTO date_dim \
+SELECT \
 date as date,   \
 TO_CHAR(date, 'fmDDth') AS day_suffix,  \
 TO_CHAR(date, 'TMDay') AS day_name, \
 EXTRACT(ISODOW FROM date) AS day_of_week, \ 
-EXTRACT(DAY FROM date) AS day_of_month,  \ 
+EXTRACT(DAY FROM date) AS day_of_month, \ 
 EXTRACT(DOY FROM date) AS day_of_year,   \
 EXTRACT(MONTH FROM date) AS month,   \
 TO_CHAR(date, 'TMMonth') AS month_name,   \
@@ -143,7 +143,7 @@ cur.execute(query)
 
 
 #Create Commodities table
-query = "CREATE TABLE Commodities (
+query = "CREATE TABLE Commodities ( \
     HS_codes char(3) NOT NULL, \
     HS_description varchar(500), \
 	PRIMARY KEY (HS_Codes) \
@@ -162,7 +162,7 @@ for index, row in df_Commodities.iterrows():
         cur.execute(query)
 
 #create Commissioners table
-query = "CREATE TABLE Commissioners(
+query = "CREATE TABLE Commissioners( \
     ID SERIAL NOT NULL, \
     Commissioner_Name varchar(150) NOT NULL, \
     Term_begin_date DATE, \
@@ -191,7 +191,7 @@ for index, row in df_Commissioners.iterrows():
     cur.execute(query)
 	
 #Create Law_Firms table
-query = "CREATE TABLE Law_Firms   ( 
+query = "CREATE TABLE Law_Firms   (  \
     Firm_Name varchar(150) NOT NULL, \
     Lead varchar(150) NOT NULL, \
 	PRIMARY KEY (Firm_Name,Lead) \
@@ -213,7 +213,7 @@ for index, row in df_Law_Firms.iterrows():
 
 
 #create ITC_Staff table
-query = "CREATE TABLE ITC_Staff  (
+query = "CREATE TABLE ITC_Staff  ( \
     ID SERIAL NOT NULL, \
     Name varchar(150), \
     Title varchar(150), \
@@ -236,17 +236,17 @@ for index, row in df_ITC_Staff.iterrows():
     cur.execute(query)
 
 #create Case_Groups table
-query = "CREATE TABLE Case_Groups (
-    Group_ID SERIAL NOT NULL,
-    product_from_countries  varchar(150) NOT NULL,
-    Product_ID char(3) NOT NULL,
-	PRIMARY KEY (Group_ID),
-   	FOREIGN KEY (Product_ID) references Products(Product_ID)
-	ON DELETE CASCADE
-	ON UPDATE CASCADE);"
+query = "CREATE TABLE Case_Groups ( \
+    Group_ID SERIAL NOT NULL, \
+    product_from_countries  varchar(150) NOT NULL, \
+    Product_ID char(3) NOT NULL, \
+	PRIMARY KEY (Group_ID), \
+   	FOREIGN KEY (Product_ID) references Products(Product_ID) \
+	ON DELETE CASCADE \
+	ON UPDATE CASCADE);" \
 
 #create Investigations table
-query = "CREATE TABLE Investigations  (
+query = "CREATE TABLE Investigations  ( \
     Investigation_Number varchar(11) NOT NULL, \
     Country_Code char(4) NOT NULL, \
     Product_ID char(3) NOT NULL, \
@@ -292,15 +292,16 @@ for index, row in df_investigations.iterrows():
     cur.execute(query)
 
 #create Petitioners table
-query = "CREATE TABLE Petitioners  (
+query = "CREATE TABLE Petitioners  ( \
     Firm_Name varchar(150) NOT NULL, \
     Group_ID SERIAL NOT NULL, \
 	PRIMARY KEY (Firm_Name, Group_ID), \
-    	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID) \
+    FOREIGN KEY (Group_ID) references Case_Groups(Group_ID) \
 	ON DELETE CASCADE \
 	ON UPDATE CASCADE \
     );"
- cur.execute(query)
+
+cur.execute(query)
  
 #Make dataframe for Petitioners 	#Please check
 
@@ -320,7 +321,7 @@ for index, row in df_petitioners.iterrows():
 
  
  #create Determinations  table
-query = "CREATE TABLE Determinations (
+query = "CREATE TABLE Determinations ( \
     Investigation_Number char(10) NOT NULL, \
     Phase varchar(100) NOT NULL, \
     Hearing_Date DATE NOT NULL, \
@@ -330,12 +331,12 @@ query = "CREATE TABLE Determinations (
 	ON DELETE CASCADE \
 	ON UPDATE CASCADE, \
     	CHECK (Phase IN ('Prelim', 'Final', 'Review')), \
-	CHECK (Determination IN ('Affirmative', 'Negative', 'Terminated'))
+	CHECK (Determination IN ('Affirmative', 'Negative', 'Terminated')) \
     );"
 cur.execute(query)
 
 #create Publications table
-query = "CREATE TABLE Publications (
+query = "CREATE TABLE Publications ( \
     Pub_No char(4), \
     Investigation_Number varchar(11) NOT NULL, \
     Phase varchar(50), \
@@ -390,7 +391,7 @@ for index, row in df_publications.iterrows():
     cur.execute(query)
     
 #create Staff_Assigned table
-query = "CREATE TABLE Staff_Assigned (
+query = "CREATE TABLE Staff_Assigned ( \
    Group_ID SERIAL NOT NULL, \
    Staff_ID SERIAL NOT NULL, \
    	PRIMARY KEY (Group_ID, Staff_ID), \
@@ -419,7 +420,7 @@ for index, row in df_StaffAssigned.iterrows():
 
     
 #create Representations  table
-query = "CREATE TABLE Representations (
+query = "CREATE TABLE Representations ( \
   Group_ID SERIAL NOT NULL, \
   Petitioner_Name varchar(150) NOT NULL, \
   Law_Firm_Name varchar(150) NOT NULL, \
@@ -454,7 +455,7 @@ for index, row in df_representations.iterrows():
 
 
 #Create Scopes Table
-query = "CREATE TABLE Scopes (
+query = "CREATE TABLE Scopes ( \
   Group_ID SERIAL NOT NULL, \
   HS_code char(10) NOT NULL, \
   PRIMARY KEY (Group_ID, HS_code), \
