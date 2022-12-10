@@ -54,6 +54,7 @@ query = "CREATE TABLE Country ( \
     Trade_Relationship varchar(50),\
 	PRIMARY KEY (Country_Code)\
     );"
+    
 cur.execute(query)
 
 #Make dataframe for Country
