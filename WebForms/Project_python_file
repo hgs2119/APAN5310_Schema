@@ -1,0 +1,477 @@
+#Load Librarys
+import pandas as pd
+import numpy as np
+import psycopg2
+import os
+
+#Load files
+main_df = pd.read_csv("dataset.csv")
+prod_df = pd.read_csv("products.csv") 
+c_df = pd.read_csv("country.csv") 
+comm_df = pd.read_csv("commissioners.csv") 
+ITC_df = pd.read_csv("ITC_Staff.csv") 
+law_df = pd.read_csv("law_firms.csv")
+Pet_df = pd.read_csv("_filename.csv")     #filename to be changed. Petitioners name used in code
+Rep_df = pd.read_csv("_filename.csv")     #filename to be changed. Representations name used in code
+staffAssigned_df = pd.read_cvs("_filename.csv") 	#filename to be changed. StaffAssigned name used in code
+
+
+#Connect to database
+conn = psycopg2.connect(
+    host="localhost", 
+    database="postgres", #please change database 
+    user="postgres", #please change username
+    password="123") #please change password
+
+#Create a cursor
+conn.autocommit = True
+cur = conn.cursor()
+
+#If table exist, Drop Table
+query =  "DROP TABLE IF EXISTS Investigations CASCADE;"
+query += "DROP TABLE IF EXISTS Publications CASCADE;"
+query += "DROP TABLE IF EXISTS Determinations CASCADE;"
+query += "DROP TABLE IF EXISTS Country CASCADE;"
+query += "DROP TABLE IF EXISTS Products CASCADE;"
+query += "DROP TABLE IF EXISTS Date_Dim CASCADE;"
+query += "DROP TABLE IF EXISTS Commodities CASCADE;"
+query += "DROP TABLE IF EXISTS Case_Groups CASCADE;"
+query += "DROP TABLE IF EXISTS Staff_Assigned CASCADE;"
+query += "DROP TABLE IF EXISTS Commissioners CASCADE;"
+query += "DROP TABLE IF EXISTS Law_Firms CASCADE;"
+query += "DROP TABLE IF EXISTS Petitioners  CASCADE;"
+query += "DROP TABLE IF EXISTS date_sequence CASCADE;"
+query += "DROP TABLE IF EXISTS ITC_Staff  CASCADE;"
+query += "DROP TABLE IF EXISTS Representations  CASCADE;"
+query += "DROP TABLE IF EXISTS Scopes  CASCADE;"
+cur.execute(query)
+
+#Create Country table
+query = "CREATE TABLE Country ( \
+    Country_Code char(4) NOT NULL,\
+    Country_Name varchar(100),\
+    Region varchar(100),\
+    Trade_Relationship varchar(50),\
+	PRIMARY KEY (Country_Code)\
+    );"
+cur.execute(query)
+
+#Make dataframe for Country
+df_Country = c_df[['Country_Code', 'Country_Name','Region' , 'Trade_Relationship']].copy()
+df_Country.drop_duplicates(inplace=True)
+df_Country = df_Country.reset_index(drop=True)
+df_Country.reset_index(inplace=True)
+
+#Insert data into Country table
+Country_dict = {}
+for index, row in df_Country.iterrows():
+    Country_dict[row['Country']] = row['index']
+    query = f"insert into Country (Country_Code, Country_Name, Region, Trade_Relationship) values ({row['index']}, '{row['Country']}', {row['Trade_Relationship']});"
+    cur.execute(query)
+
+#Create Products table
+query = "CREATE TABLE Products (
+    Product_ID char(2) NOT NULL,\
+    Product_Name varchar(100),\
+    Product_Type varchar(100),\
+	PRIMARY KEY (Country_Code)\
+        );"
+cur.execute(query)
+
+#Make dataframe for Products
+df_Products = prod_df[['Product_ID',Product_Name,Product_Type]].copy()
+df_Products.drop_duplicates(inplace=True)
+df_Products = df_Products.reset_index(drop=True)
+df_Products.reset_index(inplace=True)
+
+#Insert data into Products table
+Products_dict = {}
+for index, row in df_Products.iterrows():
+    Products_dict[row['Products']] = row['index']
+    query = f"insert into Products (Product_ID, Product_Name,Product_Type) values ({row['index']}, '{row['Products']}');"
+    cur.execute(query)
+    
+#Create date_sequence table
+query = "CREATE TABLE date_sequence (date date NOT NULL)
+)";
+cur.execute(query)
+
+#Insert Records into date_sequence table
+query = "INSERT INTO date_sequence(date)
+SELECT '1960-01-01'::DATE + SEQUENCE.number AS date
+FROM GENERATE_SERIES(0, 27000) AS SEQUENCE (number)
+  )";
+cur.execute(query)
+
+#Create date_dim table
+query = "CREATE TABLE date_dim (
+  date_value DATE NOT NULL, \
+  day_suffix TEXT NOT NULL, \
+  day_name TEXT NOT NULL, \
+  day_of_week INT NOT NULL, \
+  day_of_month INT NOT NULL, \
+  day_of_year INT NOT NULL, \
+  month INT NOT NULL, \
+  month_name TEXT NOT NULL, \
+  month_name_abbreviated TEXT NOT NULL, \
+  year_value INT NOT NULL, \
+  quarter INT NOT NULL, \
+  first_day_of_week DATE NOT NULL, \
+  last_day_of_week DATE NOT NULL \
+);"
+cur.execute(query)
+
+#Insert Records into date_sequence table
+query = "INSERT INTO date_dim
+SELECT   \
+date as date,   \
+TO_CHAR(date, 'fmDDth') AS day_suffix,  \
+TO_CHAR(date, 'TMDay') AS day_name, \
+EXTRACT(ISODOW FROM date) AS day_of_week, \ 
+EXTRACT(DAY FROM date) AS day_of_month,  \ 
+EXTRACT(DOY FROM date) AS day_of_year,   \
+EXTRACT(MONTH FROM date) AS month,   \
+TO_CHAR(date, 'TMMonth') AS month_name,   \
+TO_CHAR(date, 'Mon') AS month_name_abbreviated,   \
+EXTRACT(YEAR FROM date) AS year_value,   \
+EXTRACT(quarter FROM date) AS quarter, \
+date + (1 - EXTRACT(ISODOW FROM date))::INT AS first_day_of_week,   date + (7 - EXTRACT(ISODOW FROM date))::INT AS last_day_of_week from date_sequence \
+ORDER BY date ASC \
+);"
+cur.execute(query)
+
+
+#Create Commodities table
+query = "CREATE TABLE Commodities (
+    HS_codes char(3) NOT NULL, \
+    HS_description varchar(500), \
+	PRIMARY KEY (HS_Codes) \
+         );"
+cur.execute(query)
+
+#Make dataframe for Commodities
+df_Commodities = df[['HS_codes', 'HS_description']].copy()
+df_Commodities = df_Commodities[df_Commodities['HS_codes'].notna()]
+df_Commodities.drop_duplicates(inplace=True)
+
+#Insert data into Commodities table
+for index, row in df_Commodities.iterrows():
+    for comd in softlst:
+        query = f"insert into Commodities (HS_codes, HS_description) values ('{row['HS_codes']}', '{comd}');"
+        cur.execute(query)
+
+#create Commissioners table
+query = "CREATE TABLE Commissioners(
+    ID SERIAL NOT NULL, \
+    Commissioner_Name varchar(150) NOT NULL, \
+    Term_begin_date DATE, \
+    Term_end_date DATE, \
+	PRIMARY KEY (ID), \
+    	FOREIGN KEY (Term_begin_date) references Date_Dim \
+	ON DELETE CASCADE \
+	ON UPDATE CASCADE, \
+    	FOREIGN KEY (Term_end_date) references Date_Dim \
+	ON DELETE CASCADE \
+	ON UPDATE CASCADE \
+    );"
+cur.execute(query)
+
+#Make dataframe for Commissioners
+df_Commissioners = df[['ID', 'Commissioner_Name','Term_begin_date', 'Term_end_date']].copy()
+df_Commissioners.drop_duplicates(inplace=True)
+df_Commissioners = df_Commissioners.reset_index(drop=True)
+df_Commissioners.reset_index(inplace=True)
+
+#Insert data into Commissioners table
+Commissioners_dict = {}
+for index, row in df_Commissioners.iterrows():
+    Commissioners_dict[row['Commissioners']] = row['index']
+    query = f"insert into Country (ID, Commissioner_Name, Term_begin_date,Term_end_date) values ({row['index']}, '{row['Commissioners']}', {row['Title']});"
+    cur.execute(query)
+	
+#Create Law_Firms table
+query = "CREATE TABLE Law_Firms   ( 
+    Firm_Name varchar(150) NOT NULL, \
+    Lead varchar(150) NOT NULL, \
+	PRIMARY KEY (Firm_Name,Lead) \
+    );"
+cur.execute(query)
+
+#Make dataframe for Law_Firms
+df_Law_Firms = df[['Firm_Name','Lead']].copy()
+df_Law_Firms.drop_duplicates(inplace=True)
+df_Law_Firms = df_Law_Firms.reset_index(drop=True)
+df_Law_Firms.reset_index(inplace=True)
+
+#Insert data into Law_Firms table
+Law_Firms_dict = {}
+for index, row in df_Law_Firms.iterrows():
+    Law_Firms_dict[row['Firm_Name']] = row['index']
+    query = f"insert into Country (Firm_Name, Lead) values ({row['index']}, '{row['Commissioners']}', {row['Title']});"
+    cur.execute(query)
+
+
+#create ITC_Staff table
+query = "CREATE TABLE ITC_Staff  (
+    ID SERIAL NOT NULL, \
+    Name varchar(150), \
+    Title varchar(150), \
+	PRIMARY KEY (ID) \
+    );"
+cur.execute(query)
+
+#Make dataframe for ITC_Staff
+df_ITC_Staff = ITC_df[['Name', 'Title']].copy()
+df_ITC_Staff.drop_duplicates(inplace=True)
+df_ITC_Staff = df_Law_Firms.reset_index(drop=True)
+df_ITC_Staff.reset_index(inplace=True)
+
+
+#Insert data into ITC_Staff table
+ITC_Staff_dict = {}
+for index, row in df_ITC_Staff.iterrows():
+    ITC_Staff_dict[row['Staff']] = row['index']
+    query = f"insert into ITC_Staff (Name, Title) values ({row['index']}, '{row['Staff']}');"
+    cur.execute(query)
+
+#create Case_Groups table
+query = "CREATE TABLE Case_Groups (
+    Group_ID char(5) NOT NULL,
+    product_from_countries  varchar(150) NOT NULL,
+    Product_ID char(3) NOT NULL,
+	PRIMARY KEY (Group_ID),
+   	FOREIGN KEY (Product_ID) references Products(Product_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE);"
+
+#create Investigations table
+query = "CREATE TABLE Investigations  (
+    Investigation_Number varchar(11) NOT NULL, \
+    Country_Code char(5) NOT NULL, \
+    Product_ID char(3) NOT NULL, \
+    Group_ID char(5) NOT NULL, \
+    Investigation_Title char(10) NOT NULL, \
+	PRIMARY KEY (Investigation_Number) \
+    );"
+cur.execute(query)
+
+# create investigations and case_groups dataframes 
+inv_df = main_df[["Investigation_number", "Investigation_title", "country", "Staff Conference"]].copy()
+    # assign group_id
+inv_df['group_id'] = inv_df.groupby(["Investigation_title","Staff Conference"]).ngroup()
+    # join product codes
+inv_df.join(df_Products("Product_Name"), on = "Investigation_number")
+    # join country codes
+inv_df.join(df_Country("Country_Name"), on = "Country")
+
+    # create investigations df
+df_investigations = inv_df[["Investigation_Number", "Country_Code", "Product_id", "group_id"]]
+df_investigations.drop_duplicates(inplace=True)
+df_investigations = df.investigations.reset_index(drop=True)
+df_investigations.reset_index(inplace=True)
+
+    # create groups df
+df_case_groups = inv_df[["group_id", "Investigation_title", "Product_ID"]]
+df_case_groups.drop_duplicates(inplace=True)
+df_case_groups = df.case_groups.reset_index(drop=True)
+df_case_groups.reset_index(inplace=True)
+
+#Insert data into case_groups table
+Groups_dict = {}
+for index, row in df_case_groups.iterrows():
+    Groups_dict[row['group']] = row['index']
+    query = f"insert into Case_Groups (group_id, investigation_title, group_id) values ({row['index']}, '{row['group']}');"
+    cur.execute(query)
+
+    #Insert data into investigations table
+Invs_dict = {}
+for index, row in df_investigations.iterrows():
+    Invs_dict[row['Investigation']] = row['index']
+    query = f"insert into Investigations (investigation_number, country_code, product_id, group_id) values ({row['index']}, '{row['Investigation']}');"
+    cur.execute(query)
+
+#create Petitioners table
+query = "CREATE TABLE Petitioners  (
+    Firm_Name varchar(150) NOT NULL, \
+    Group_ID char(5) NOT NULL, \
+	PRIMARY KEY (Firm_Name, Group_ID), \
+    	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID) \
+	ON DELETE CASCADE \
+	ON UPDATE CASCADE \
+    );"
+ cur.execute(query)
+ 
+#Make dataframe for Petitioners 	#Please check
+
+df_petitioners = Pet_df[['firm_name', 'group_id']].copy()
+df_petitioners.drop_duplicates(inplace=True)
+df_petitioners = df_petitioners.reset_index(drop=True)
+df_petitioners.reset_index(inplace=True)
+
+
+#Insert data into Petitioners table	#Please check
+
+Pets_dict = {}
+for index, row in df_petitioners.iterrows():
+    Pets_dict[row['Petitioners']] = row['index']
+    query = f"insert into Petitioners (firm_name, group_id) values ({row['index']}, '{row['Petitioners']}');"
+    cur.execute(query)
+
+ 
+ #create Determinations  table
+query = "CREATE TABLE Determinations (
+    Investigation_Number char(10) NOT NULL, \
+    Phase varchar(100) NOT NULL, \
+    Hearing_Date DATE NOT NULL, \
+    Determination varchar(15) NOT NULL, \
+	PRIMARY KEY (Investigation_Number, Phase), \
+	FOREIGN KEY (Hearing_Date) REFERENCES Date_Dim(Date) \
+	ON DELETE CASCADE \
+	ON UPDATE CASCADE, \
+    	CHECK (Phase IN ('Prelim', 'Final', 'Review')), \
+	CHECK (Determination IN ('Affirmative', 'Negative', 'Terminated'))
+    );"
+cur.execute(query)
+
+#create Publications table
+query = "CREATE TABLE Publications (
+    Pub_No char(4), \
+    Investigation_Number varchar(11) NOT NULL, \
+    Phase varchar(50), \
+	PRIMARY KEY (Pub_No), \
+    FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number) \
+    ON DELETE CASCADE \
+	ON UPDATE CASCADE, \
+    CHECK (Phase IN ('Prelim', 'Final', 'Review')) \
+    );"
+cur.execute(query)  
+
+# make publications and determinations df
+    # select prelim investigations only
+df_Pubs_Prelim = main_df.iloc[:,[0,4,5,6]].copy()
+        # add prelim as phase
+df_Pubs_Prelim['phase'] = 'Prelim'
+        # rename columns to match schema
+df_Pubs_Prelim = df_Pubs_Prelim.rename(columns = {"Staff Conference": "hearing_date", "Preliminary Determination": "determination"})
+    # select final investigations only
+df_Pubs_Final = main_df.iloc[:,[0,7,8,9]]
+        # add final as phase
+df_Pubs_Final['phase'] = 'Final'
+        # rename columns to match schema
+df_Pubs_Final = df_Pubs_Final.rename(columns = {"Final Determination": "determination", "pub_no.1": "pub_no"})
+    #create union of phase dfs
+df_pubs_dets_by_phase = pd.concat([df_Pubs_Prelim, df_Pubs_Final])
+df_Pubs_Prelim.head()
+df_Pubs_Final.head()
+df_pubs_dets_by_phase.head()
+    # Make dataframe for determinations
+df_determinations = df_pubs_dets_by_phase[['investigation_number', 'phase', 'hearing_date', 'determination']].copy()
+df_determinations = df_determinations.reset_index(drop=True)
+df_determinations.reset_index(inplace=True)
+    # Make dataframe for publications (drop dupes to eliminate duplicated rows for country and determination)
+df_publications = df_pubs_dets_by_phase[['pub_no', 'phase', 'investigation_number']]
+df_publications.drop_duplicates(inplace=True)
+df_publications = df_publications.reset_index(drop=True)
+df_publications.reset_index(inplace=True)
+
+#Insert data into determinations table
+Determinations_dict = {}
+for index, row in df_determinations.iterrows():
+    Determinations_dict[row['Determination']] = row['index']
+    query = f"insert into Determinations (Investigation_number, phase, hearing_date, determinations) values ({row['index']}, '{row['Determination']}');"
+    cur.execute(query)
+    
+#Insert data into publications table
+Pubs_dict = {}
+for index, row in df_publications.iterrows():
+    Pubs_dict[row['Publication']] = row['index']
+    query = f"insert into Publications (pub_no, phase, investigation_number) values ({row['index']}, '{row['Publication']}');"
+    cur.execute(query)
+    
+#create Staff_Assigned table
+query = "CREATE TABLE Staff_Assigned (
+   Group_ID SERIAL NOT NULL, \
+   Staff_ID SERIAL NOT NULL, \
+   	PRIMARY KEY (Group_ID, Staff_ID), \
+   	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID) \
+	ON DELETE CASCADE \
+	ON UPDATE CASCADE, \
+   	FOREIGN KEY (Staff_ID) references ITC_Staff(ID) \
+	ON DELETE CASCADE \
+	ON UPDATE CASCADE \
+    );"
+cur.execute(query)
+
+#Make dataframe for Staff_Assigned		#Please check
+
+df_StaffAssigned = staff_df[['group_id', 'staff_id']].copy()
+df_StaffAssigned.drop_duplicates(inplace=True)
+df_StaffAssigned = df_StaffAssigned.reset_index(drop=True)
+df_StaffAssigned.reset_index(inplace=True)
+
+#Insert data into Staff_Assigned table 		#Please check
+staff_dict = {}
+for index, row in df_StaffAssigned.iterrows():
+    Pubs_dict[row['StaffAssigned']] = row['index']
+    query = f"insert into df_StaffAssigned (group_id, staff_id) values ({row['index']}, '{row['StaffAssigned']}');"
+    cur.execute(query)
+
+    
+#create Representations  table
+query = "CREATE TABLE Representations (
+  Group_ID SERIAL NOT NULL, \
+  Petitioner_Name varchar(150) NOT NULL, \
+  Law_Firm_Name varchar(150) NOT NULL, \
+  Law_Lead varchar(150) NOT NULL, \
+  PRIMARY KEY (Group_ID, Petitioner_Name, Law_Firm_Name), \
+  FOREIGN KEY (Group_ID) references Case_Groups(Group_ID) \
+  ON DELETE CASCADE \
+  ON UPDATE CASCADE, \
+  FOREIGN KEY (Petitioner_Name, Group_ID) references Petitioners \
+  ON DELETE CASCADE \
+  ON UPDATE CASCADE, \
+  FOREIGN KEY (Law_Firm_Name, Law_Lead) references Law_Firms(Firm_Name,Lead) \
+  ON DELETE CASCADE \
+  ON UPDATE CASCADE \
+    );"
+cur.execute(query)
+
+#Make dataframe for Representations	#Please check
+
+df_representations = Rep_df[['group_id', 'petitioner_name', 'law_firm_name', 'law_lead']].copy()
+df_representations.drop_duplicates(inplace=True)
+df_representations = df_representations.reset_index(drop=True)
+df_representations.reset_index(inplace=True)
+
+
+#Insert data into Representations table #Please check
+Rep_dict = {}
+for index, row in df_representations.iterrows():
+    Rep_dict[row['Representations']] = row['index']
+    query = f"insert into Representations (group_id, petitioner_name, law_firm_name, law_lead) values ({row['index']}, '{row['Representations']}');"
+    cur.execute(query)
+
+
+#Create Scopes Table
+query = "CREATE TABLE Scopes (
+  Group_ID SERIAL NOT NULL, \
+  HS_code char(10) NOT NULL, \
+  PRIMARY KEY (Group_ID, HS_code), \
+  FOREIGN KEY (Group_ID) references Case_Groups(Group_ID) \
+  ON DELETE CASCADE \
+  ON UPDATE CASCADE, \
+  FOREIGN KEY (HS_code) references Commodities(HS_code) \
+  ON DELETE CASCADE \
+  ON UPDATE CASCADE \
+    );"
+cur.execute(query)
+
+#Make dataframe for Scopes
+
+
+
+#Insert data into Scopes table
+
+
+
+cur.close()

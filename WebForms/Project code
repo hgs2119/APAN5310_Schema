@@ -1,0 +1,182 @@
+DROP TABLE IF EXISTS Investigations CASCADE;
+ DROP TABLE IF EXISTS Publications CASCADE;
+ DROP TABLE IF EXISTS Determinations CASCADE;
+ DROP TABLE IF EXISTS Country CASCADE;
+ DROP TABLE IF EXISTS Products CASCADE;
+ DROP TABLE IF EXISTS Date_Dim CASCADE;
+ DROP TABLE IF EXISTS Commodities CASCADE;
+ DROP TABLE IF EXISTS Case_Groups CASCADE;
+ DROP TABLE IF EXISTS Investigations_Title CASCADE;
+ DROP TABLE IF EXISTS Commissioners CASCADE;
+ DROP TABLE IF EXISTS Staff_Assigned CASCADE;
+ DROP TABLE IF EXISTS Law_Firms CASCADE;
+ DROP TABLE IF EXISTS Petitioners CASCADE;
+ DROP TABLE IF EXISTS ITC_Staff CASCADE;
+ DROP TABLE IF EXISTS Representations CASCADE;
+ DROP TABLE IF EXISTS Scopes CASCADE;
+
+
+CREATE TABLE Country (
+    Country_Code char(4) NOT NULL,
+    Country_Name varchar(100),
+    Region varchar(100),
+    Trade_Relationship varchar(50),
+	PRIMARY KEY (Country_Code)
+);
+
+CREATE TABLE Products (
+    Product_ID char(3) NOT NULL,
+    Product_Name varchar(100) UNIQUE,
+    Product_Type varchar(100),
+	PRIMARY KEY (Product_ID)
+);
+
+CREATE TABLE Date_Dim (
+   Date DATE NOT NULL,
+   Day SMALLINT NOT NULL,
+   DaySuffix CHAR(2) NOT NULL,
+   WeekDayName VARCHAR(10) NOT NULL,
+   WeekDayName_Short CHAR(3) NOT NULL,
+   Month SMALLINT NOT NULL,
+   MonthName VARCHAR(10) NOT NULL,
+   MonthName_Short CHAR(3) NOT NULL,
+   Quarter SMALLINT NOT NULL,
+   QuarterName VARCHAR(6) NOT NULL,
+   Year INT NOT NULL,
+   MMYYYY CHAR(6) NOT NULL,
+   MonthYear CHAR(7) NOT NULL,
+   PRIMARY KEY (Date)
+);
+
+CREATE TABLE Commodities (
+    HS_code char(10) NOT NULL,
+    HS_description varchar(500),
+	PRIMARY KEY (HS_Code)
+);
+
+CREATE TABLE Case_Groups (
+    Group_ID char(5) NOT NULL,
+    product_from_countries  varchar(150) NOT NULL,
+    Product_ID char(3) NOT NULL,
+	PRIMARY KEY (Group_ID),
+    FOREIGN KEY (Product_ID) references Products(Product_ID)
+ON DELETE CASCADE
+ON UPDATE CASCADE);
+
+
+CREATE TABLE Commissioners   (
+    ID char(10) NOT NULL,
+    Commissioner_Name varchar(150) NOT NULL,
+    Term_begin_date DATE,
+    Term_end_date DATE,
+	PRIMARY KEY (ID),
+    	FOREIGN KEY (Term_begin_date) references Date_Dim
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+    	FOREIGN KEY (Term_end_date) references Date_Dim
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
+);
+
+
+CREATE TABLE ITC_Staff  (
+    ID char(10) NOT NULL,
+    Name varchar(150),
+    Title varchar(150),
+	PRIMARY KEY (ID)
+);
+
+CREATE TABLE Law_Firms   (
+    Firm_Name varchar(150) NOT NULL,
+    Lead varchar(150) NOT NULL,
+	PRIMARY KEY (Firm_Name,Lead)
+);
+
+CREATE TABLE Investigations  (
+    Investigation_Number varchar(11) NOT NULL,
+    Country_Code char(5) NOT NULL,
+    Product_ID char(3) NOT NULL,
+    Group_ID char(5) NOT NULL,
+    Investigation_Title char(10) NOT NULL,
+	PRIMARY KEY (Investigation_Number)
+	);
+
+CREATE TABLE Petitioners  (
+    Firm_Name varchar(150) NOT NULL,
+    Group_ID char(5) NOT NULL,
+	PRIMARY KEY (Firm_Name, Group_ID),
+    	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE);
+
+CREATE TABLE Determinations (
+    Investigation_Number char(10) NOT NULL,
+    Phase varchar(100) NOT NULL,
+    Hearing_Date DATE NOT NULL,
+    Determination varchar(15) NOT NULL,
+	PRIMARY KEY (Investigation_Number, Phase),
+	FOREIGN KEY (Hearing_Date) REFERENCES Date_Dim(Date)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+    	CHECK (Phase IN ('Prelim', 'Final', 'Review')),
+	CHECK (Determination IN ('Affirmative', 'Negative', 'Terminated'))
+);
+
+
+CREATE TABLE Publications (
+    Pub_No char(4),
+    Investigation_Number varchar(11) NOT NULL,
+    Phase varchar(50),
+	PRIMARY KEY (Pub_No),
+    FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number)
+    ON DELETE CASCADE
+	ON UPDATE CASCADE,
+    CHECK (Phase IN ('Prelim', 'Final', 'Review'))
+
+);
+
+
+CREATE TABLE Staff_Assigned (
+   Group_ID char(5) NOT NULL,
+   Staff_ID char(10) NOT NULL,
+   	PRIMARY KEY (Group_ID, Staff_ID),
+   	FOREIGN KEY (Group_ID) references Case_Groups(Group_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+   	FOREIGN KEY (Staff_ID) references ITC_Staff(ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
+   
+);
+
+
+CREATE TABLE Representations (
+  Group_ID char(5) NOT NULL,
+  Petitioner_Name varchar(150) NOT NULL,
+  Law_Firm_Name varchar(150) NOT NULL,
+  Law_Lead varchar(150) NOT NULL,
+  PRIMARY KEY (Group_ID, Petitioner_Name, Law_Firm_Name),
+  FOREIGN KEY (Group_ID) references Case_Groups(Group_ID)
+  ON DELETE CASCADE
+ON UPDATE CASCADE,
+  FOREIGN KEY (Petitioner_Name, Group_ID) references Petitioners
+  ON DELETE CASCADE
+ON UPDATE CASCADE,
+  FOREIGN KEY (Law_Firm_Name, Law_Lead) references Law_Firms(Firm_Name,Lead)
+  ON DELETE CASCADE
+ON UPDATE CASCADE
+  
+);
+
+CREATE TABLE Scopes (
+  Group_ID char(5) NOT NULL,
+  HS_code char(10) NOT NULL,
+  PRIMARY KEY (Group_ID, HS_code),
+  FOREIGN KEY (Group_ID) references Case_Groups(Group_ID)
+  ON DELETE CASCADE
+ON UPDATE CASCADE,
+  FOREIGN KEY (HS_code) references Commodities(HS_code)
+  ON DELETE CASCADE
+ON UPDATE CASCADE
+  
+);

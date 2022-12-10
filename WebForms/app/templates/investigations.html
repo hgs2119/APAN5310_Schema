@@ -1,0 +1,29 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="row">
+	<div class="col text-left pt-5">
+		<h1>List of Existing Investigations</h1>
+		<table class = "table">
+			<thead>
+				<tr>
+					<th>Investigation Number</th>
+					<th>Investigation Title</th> 
+					<th>Case Group Number</th>
+			  	</tr>
+			</thead>
+			<tbody>
+		{% for inv in investigations %}
+				<tr>
+					<td>{{ inv.investigation_number }}</td>
+					<td>{{ inv.investigation_title }}</td>
+					<td>{{ inv.group_id }}</td>
+				</tr>
+			</tbody>
+		<br />
+		{% endfor %}
+		</table>
+	<a href="{{ url_for('index') }}">Back to Main</a>
+	</div>
+</div>
+
+{% endblock %}

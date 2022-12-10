@@ -5,10 +5,10 @@ from wtforms.validators import DataRequired
 
 class NewCaseForm(FlaskForm):
     investigation_product = StringField('Product', validators=[DataRequired()])
-    ad_investigation_number = StringField('AD Investigation Numbers 731-TA-')
-    ad_country = StringField('AD Investigation Countries')
-    cvd_investigation_number = StringField('CVD Investigation Numbers 701-TA-')
-    cvd_country = StringField('CVD Investigation Countries')
+    ad_investigation_number = StringField('AD Investigation Numbers: integer values beginning 731-TA-, separate with commas')
+    ad_country = StringField('AD Investigation Countries, separate with commas')
+    cvd_investigation_number = StringField('CVD Investigation Numbers: integer values beginning 701-TA-, separate with commas')
+    cvd_country = StringField('CVD Investigation Countries, separate with commas')
     commodity_code = StringField('Scope HTS (0000.00.00.00)')
     petitioner_firm_name = StringField('Petitioner Companies or Coalition Name')
     law_firm_name = StringField('Petitioner Law Firm')
@@ -17,10 +17,10 @@ class NewCaseForm(FlaskForm):
 
 class UpdateCaseForm(FlaskForm):
     pub_no = IntegerField('Publication Number', validators=[DataRequired()])
-    phase = StringField('Investigation Phase', choices=[('prelim','Prelim'), ('final', 'Final'), ('review', 'Sunset Review')])
-    ad_investigation_number = StringField('AD Investigation Number(s)')
+    phase = SelectField('Investigation Phase', choices=[('prelim','Prelim'), ('final', 'Final'), ('review', 'Sunset Review')])
+    ad_investigation_number = StringField('AD Investigation Number(s), separate with commas')
     ad_determination = SelectField('AD Determination', choices=[('','None'), ('affirmative', 'Affirmative'), ('negative', 'Negative'), ('terminated', 'Terminated')])
-    cvd_investigation_number = StringField('CVD Investigation Number(s)')
+    cvd_investigation_number = StringField('CVD Investigation Number(s), separate with commas')
     cvd_determination = SelectField('CVD Determination', choices=[('','None'), ('affirmative', 'Affirmative'), ('negative', 'Negative'), ('terminated', 'Terminated')])
     itc_investigator_name = StringField('Investigator', validators=[DataRequired()])
     itc_analyst_name = StringField('Analyst')
