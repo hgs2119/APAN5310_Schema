@@ -22,7 +22,7 @@ staffAssigned_df = pd.read_csv("staff_assigned.csv")
 #Connect to database
 conn = psycopg2.connect(
     host="localhost", 
-    database="postgres", 
+    database="postgres",
     user="postgres", 
     password="123") 
 
@@ -69,7 +69,7 @@ df_Country.reset_index(inplace=True)
 #Insert data into Country table
 Country_dict = {}
 for index, row in df_Country.iterrows():
-    Country_dict[row['Country']] = row['index']
+    Country_dict[row['Country_Code']] = row['index']
     query = f"insert into Country (Country_Code, Country_Name, Region, Trade_Relationship) values ({row['Country_Code']}, '{row['Country_Name']}', '{row['Region']}', '{row['Trade_Relationship']}');"
     cur.execute(query)
 
@@ -91,20 +91,20 @@ df_Products.reset_index(inplace=True)
 #Insert data into Products table
 Products_dict = {}
 for index, row in df_Products.iterrows():
-    Products_dict[row['Products']] = row['index']
+    Products_dict[row['Product_ID']] = row['index']
     query = f"insert into Products (Product_ID, Product_Name,Product_Type) values ({row['index']}, '{row['Product_Name']}', '{row['Product_Type']}');"
     cur.execute(query)
     
 #Create date_sequence table
 query = "CREATE TABLE date_sequence (date date NOT NULL) \
-)";
+;"
 cur.execute(query)
 
 #Insert Records into date_sequence table
 query = "INSERT INTO date_sequence(date) \
 SELECT '1960-01-01'::DATE + SEQUENCE.number AS date \
 FROM GENERATE_SERIES(0, 27000) AS SEQUENCE (number) \
-  )";
+  ;"
 cur.execute(query)
 
 #Create date_dim table
@@ -121,7 +121,8 @@ query = "CREATE TABLE date_dim ( \
   year_value INT NOT NULL, \
   quarter INT NOT NULL, \
   first_day_of_week DATE NOT NULL, \
-  last_day_of_week DATE NOT NULL \
+  last_day_of_week DATE NOT NULL, \
+  PRIMARY KEY (date) \
 );"
 cur.execute(query)
 
@@ -154,15 +155,15 @@ query = "CREATE TABLE Commodities ( \
 cur.execute(query)
 
 #Make dataframe for Commodities
-df_Commodities = commodities_df[['HS_code', 'HS_description']].copy()
-df_Commodities = df_Commodities[df_Commodities['HS_code'].notna()]
+df_Commodities = commodities_df[['hs_code', 'hs_description']].copy()
+df_Commodities = df_Commodities[df_Commodities['hs_code'].notna()]
 df_Commodities.drop_duplicates(inplace=True)
 
 #Insert data into Commodities table
 comm_dict = {}
 for index, row in df_Commodities.iterrows():
     for comm in comm_dict:
-        query = f"insert into Commodities (HS_code, HS_description) values ('{row['HS_code']}', '{comm}');"
+        query = f"insert into Commodities (HS_code, HS_description) values ('{row['hs_code']}', '{comm}');"
         cur.execute(query)
 
 #create Commissioners table
@@ -182,16 +183,24 @@ query = "CREATE TABLE Commissioners( \
 cur.execute(query)
 
 #Make dataframe for Commissioners
-df_Commissioners = comm_df[['ID', 'Commissioner_Name','Term_begin_date', 'Term_end_date']].copy()
+df_Commissioners = comm_df[['commissioner_name','term_begin_date', 'term_end_date']].copy()
+df_Commissioners= df_Commissioners.where(pd.notnull(df_Commissioners), None)
 df_Commissioners.drop_duplicates(inplace=True)
 df_Commissioners = df_Commissioners.reset_index(drop=True)
 df_Commissioners.reset_index(inplace=True)
 
+#Insert dates into date table
+Date_dict = {}
+for index, row in df_Commissioners.iterrows():
+    Date_dict[row['term_begin_date']] = row['index']
+    query = f"insert into date_dim (date_value) values ('{row['term_begin_date']}');"
+    cur.execute(query)
+
 #Insert data into Commissioners table
 Commissioners_dict = {}
 for index, row in df_Commissioners.iterrows():
-    Commissioners_dict[row['Commissioners']] = row['index']
-    query = f"insert into Country (ID, Commissioner_Name, Term_begin_date,Term_end_date) values ('{row['index']}', '{row['Commissioner_Name']}', '{row['Term_begin_date']}', '{row['Term_end_date']}');"
+    Commissioners_dict[row['commissioner_name']] = row['index']
+    query = f"insert into Commissioners (Commissioner_Name, Term_begin_date) values ('{row['commissioner_name']}', '{row['term_begin_date']}');"
     cur.execute(query)
 	
 #Create Law_Firms table
@@ -203,7 +212,7 @@ query = "CREATE TABLE Law_Firms   (  \
 cur.execute(query)
 
 #Make dataframe for Law_Firms
-df_Law_Firms = law_df[['Firm_Name','Lead']].copy()
+df_Law_Firms = law_df[['firm_name','lead']].copy()
 df_Law_Firms.drop_duplicates(inplace=True)
 df_Law_Firms = df_Law_Firms.reset_index(drop=True)
 df_Law_Firms.reset_index(inplace=True)
@@ -211,8 +220,8 @@ df_Law_Firms.reset_index(inplace=True)
 #Insert data into Law_Firms table
 Law_Firms_dict = {}
 for index, row in df_Law_Firms.iterrows():
-    Law_Firms_dict[row['Firm_Name']] = row['index']
-    query = f"insert into Country (Firm_Name, Lead) values ('{row['Firm_Name']}', '{row['Lead']}');"
+    Law_Firms_dict[row['firm_name']] = row['index']
+    query = f"insert into Law_Firms (firm_name, lead) values ('{row['firm_name']}', '{row['lead']}');"
     cur.execute(query)
 
 
@@ -226,7 +235,7 @@ query = "CREATE TABLE ITC_Staff  ( \
 cur.execute(query)
 
 #Make dataframe for ITC_Staff
-df_ITC_Staff = ITC_df[['Name', 'Title']].copy()
+df_ITC_Staff = ITC_df[['name', 'title']].copy()
 df_ITC_Staff.drop_duplicates(inplace=True)
 df_ITC_Staff = df_Law_Firms.reset_index(drop=True)
 df_ITC_Staff.reset_index(inplace=True)
@@ -235,8 +244,8 @@ df_ITC_Staff.reset_index(inplace=True)
 #Insert data into ITC_Staff table
 ITC_Staff_dict = {}
 for index, row in df_ITC_Staff.iterrows():
-    ITC_Staff_dict[row['Staff']] = row['index']
-    query = f"insert into ITC_Staff (Name, Title) values ({row['index']}, '{row['Name']}', '{row['Title']}');"
+    ITC_Staff_dict[row['Name']] = row['index']
+    query = f"insert into ITC_Staff (name, title) values ({row['index']}, '{row['name']}', '{row['title']}');"
     cur.execute(query)
 
 #create Case_Groups table
@@ -284,14 +293,14 @@ df_case_groups.reset_index(inplace=True)
 #Insert data into case_groups table
 Groups_dict = {}
 for index, row in df_case_groups.iterrows():
-    Groups_dict[row['group']] = row['index']
+    Groups_dict[row['group_id']] = row['index']
     query = f"insert into Case_Groups (group_id, investigation_title, group_id) values ({row['index']}, '{row['group']}');"
     cur.execute(query)
 
     #Insert data into investigations table
 Invs_dict = {}
 for index, row in df_investigations.iterrows():
-    Invs_dict[row['Investigation']] = row['index']
+    Invs_dict[row['investigation_number']] = row['index']
     query = f"insert into Investigations (investigation_number, country_code, product_id, group_id) values ({row['index']}, '{row['Investigation']}');"
     cur.execute(query)
 
@@ -321,7 +330,7 @@ df_petitioners = df_petitioners.join(df_investigations("Investigation_number"), 
 
 Pets_dict = {}
 for index, row in df_petitioners.iterrows():
-    Pets_dict[row['Petitioners']] = row['index']
+    Pets_dict[row['firm_name']] = row['index']
     query = f"insert into Petitioners (firm_name, group_id) values ({row['firm_name']}, '{row['group_id']}');"
     cur.execute(query)
 
@@ -382,17 +391,24 @@ df_publications.drop_duplicates(inplace=True)
 df_publications = df_publications.reset_index(drop=True)
 df_publications.reset_index(inplace=True)
 
+#Insert hearing dates into date table
+Date_dict2 = {}
+for index, row in df_determinations.iterrows():
+    Date_dict2[row['hearing_date']] = row['index']
+    query = f"insert into date_dim (date_value) values ('{row['hearing_date']}');"
+    cur.execute(query)
+
 #Insert data into determinations table
 Determinations_dict = {}
 for index, row in df_determinations.iterrows():
-    Determinations_dict[row['Determination']] = row['index']
-    query = f"insert into Determinations (Investigation_number, phase, hearing_date, determinations) values ({row['index']}, '{row['Determination']}');"
+    Determinations_dict[row['investigation_number']] = row['index']
+    query = f"insert into Determinations (investigation_number, phase, hearing_date, determinations) values ({row['index']}, '{row['Determination']}');"
     cur.execute(query)
     
 #Insert data into publications table
 Pubs_dict = {}
 for index, row in df_publications.iterrows():
-    Pubs_dict[row['Publication']] = row['index']
+    Pubs_dict[row['pub_no']] = row['index']
     query = f"insert into Publications (pub_no, phase, investigation_number) values ({row['index']}, '{row['Publication']}');"
     cur.execute(query)
     
@@ -433,7 +449,7 @@ df_StaffAssigned_full = pd.merge(df_StaffAssigned, df_ITC_Staff, on=['name', 'ti
 #Insert data into Staff_Assigned table 		#Please check
 staff_dict = {}
 for index, row in df_StaffAssigned_full.iterrows():
-    Pubs_dict[row['StaffAssigned']] = row['index']
+    Pubs_dict[row['group_id']] = row['index']
     query = f"insert into df_StaffAssigned (group_id, staff_id) values ('{row['group_id']}', '{row['staff_id']}');"
     cur.execute(query)
     
@@ -466,7 +482,7 @@ df_representations.reset_index(inplace=True)
 #Insert data into Representations table #Please check
 Rep_dict = {}
 for index, row in df_representations.iterrows():
-    Rep_dict[row['Representations']] = row['index']
+    Rep_dict[row['group_id']] = row['index']
     query = f"insert into Representations (group_id, petitioner_name, law_firm_name, law_lead) values ({row['index']}, '{row['Representations']}');"
     cur.execute(query)
 
@@ -505,7 +521,7 @@ df_Scopes = df_Scopes.join(temp_scope_hs)
 #Insert data into Scopes table 		#Please check
 scope_dict= {}
 for index, row in df_Scopes.iterrows():
-    Pubs_dict[row['Scopes']] = row['index']
+    Pubs_dict[row['group_id']] = row['index']
     query = f"insert into df_Scopes (group_id, HS_code) values ('{row['group_id']}', '{row['HS_code']}');"
     cur.execute(query)
 
