@@ -336,7 +336,7 @@ for index, row in df_petitioners.iterrows():
  
  #create Determinations  table
 query = "CREATE TABLE Determinations ( \
-    Investigation_Number char(10) NOT NULL, \
+    Investigation_Number varchar(11) NOT NULL, \
     Phase varchar(100) NOT NULL, \
     Hearing_Date DATE NOT NULL, \
     Determination varchar(15) NOT NULL, \
@@ -354,7 +354,7 @@ query = "CREATE TABLE Publications ( \
     Pub_No char(4), \
     Investigation_Number varchar(11) NOT NULL, \
     Phase varchar(50), \
-	PRIMARY KEY (Pub_No), \
+	PRIMARY KEY (Pub_No, Investigation_Number), \
     FOREIGN KEY (Investigation_Number) REFERENCES Investigations(Investigation_Number) \
     ON DELETE CASCADE \
 	ON UPDATE CASCADE, \
