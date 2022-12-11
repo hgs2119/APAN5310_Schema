@@ -236,7 +236,7 @@ cur.execute(query)
 #Make dataframe for ITC_Staff
 df_ITC_Staff = ITC_df[['name', 'title']].copy()
 df_ITC_Staff.drop_duplicates(inplace=True)
-df_ITC_Staff = df_Law_Firms.reset_index(drop=True)
+df_ITC_Staff = df_ITC_Staff.reset_index(drop=True)
 df_ITC_Staff.reset_index(inplace=True)
 
 
@@ -244,7 +244,7 @@ df_ITC_Staff.reset_index(inplace=True)
 ITC_Staff_dict = {}
 for index, row in df_ITC_Staff.iterrows():
     ITC_Staff_dict[row['Name']] = row['index']
-    query = f"insert into ITC_Staff (name, title) values ({row['index']}, '{row['name']}', '{row['title']}');"
+    query = f"insert into ITC_Staff (name, title) values ('{row['name']}', '{row['title']}');"
     cur.execute(query)
 
 #create Case_Groups table
@@ -273,20 +273,20 @@ inv_df = main_df[["Investigation_number", "Investigation_title", "country", "Sta
     # assign group_id
 inv_df['group_id'] = inv_df.groupby(["Investigation_title","Staff Conference"]).ngroup()
     # join product codes
-inv_df = inv_df.join(df_Products("Product_Name"), on = "Investigation_number")
+inv_df = inv_df.join(df_Products("Product_Name"), on = "Investigation_title")
     # join country codes
-inv_df = inv_df.join(df_Country("Country_Name"), on = "Country")
+inv_df = inv_df.join(df_Country("Country_Name"), on = "country")
 
     # create investigations df
 df_investigations = inv_df[["Investigation_Number", "Country_Code", "Product_id", "group_id"]]
 df_investigations.drop_duplicates(inplace=True)
-df_investigations = df.investigations.reset_index(drop=True)
+df_investigations = df_investigations.reset_index(drop=True)
 df_investigations.reset_index(inplace=True)
 
     # create groups df
 df_case_groups = inv_df[["group_id", "Investigation_title", "Product_ID"]]
 df_case_groups.drop_duplicates(inplace=True)
-df_case_groups = df.case_groups.reset_index(drop=True)
+df_case_groups = df_case_groups.reset_index(drop=True)
 df_case_groups.reset_index(inplace=True)
 
 #Insert data into case_groups table
