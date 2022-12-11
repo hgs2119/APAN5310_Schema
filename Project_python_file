@@ -132,8 +132,8 @@ SELECT \
 date as date, \
 TO_CHAR(date, 'fmDDth') AS day_suffix,  \
 TO_CHAR(date, 'TMDay') AS day_name, \
-EXTRACT(ISODOW FROM date) AS day_of_week, \ 
-EXTRACT(DAY FROM date) AS day_of_month, \ 
+EXTRACT(ISODOW FROM date) AS day_of_week, \
+EXTRACT(DAY FROM date) AS day_of_month, \
 EXTRACT(DOY FROM date) AS day_of_year,   \
 EXTRACT(MONTH FROM date) AS month,   \
 TO_CHAR(date, 'TMMonth') AS month_name,   \
