@@ -141,8 +141,7 @@ TO_CHAR(date, 'Mon') AS month_name_abbreviated,   \
 EXTRACT(YEAR FROM date) AS year_value,   \
 EXTRACT(quarter FROM date) AS quarter, \
 date + (1 - EXTRACT(ISODOW FROM date))::INT AS first_day_of_week,   date + (7 - EXTRACT(ISODOW FROM date))::INT AS last_day_of_week from date_sequence \
-ORDER BY date ASC \
-);"
+ORDER BY date ASC;" \
 cur.execute(query)
 
 
