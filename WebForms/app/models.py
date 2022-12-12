@@ -133,7 +133,7 @@ class Petitioners(db.Model):
 class Determinations(db.Model):
     __tablename__ = 'determinations'
 
-    investigation_number = db.Column(db.String(10), primary_key=True)
+    investigation_number = db.Column(db.String(11), primary_key=True)
     phase = db.Column(db.String(100), db.CheckConstraint("phase IN ('prelim', 'final', 'review')"), primary_key=True)
     hearing_date = db.Column(db.Date, db.ForeignKey('date_dim.date'))
     determination = db.Column(db.String(15), db.CheckConstraint("determination IN ('affirmative', 'negative', 'terminated')"), nullable=False)
@@ -145,7 +145,7 @@ class Publications(db.Model):
     __tablename__ = 'publications'
 
     pub_no = db.Column(db.String(4), primary_key=True)
-    investigation_number = db.Column(db.String(11), db.ForeignKey('investigations.investigation_number'), nullable=False)
+    investigation_number = db.Column(db.String(11), db.ForeignKey('investigations.investigation_number'), primary_key = True)
     phase = db.Column(db.String(50), db.CheckConstraint("phase IN ('prelim', 'final', 'review')"), nullable = False)
     
     def __repr__(self):
